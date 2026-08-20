@@ -7,7 +7,7 @@
   ],
   "models": [
    {
-    "path": "data/hd/items/weapon/polearm/halberd/halberd.model"
+    "path": "data/hd/items/weapon/spear/pike/pike.model"
    },
    {
     "path": "data/hd/vfx/meshes/fx_mesh_KorlicAxe.model"
@@ -21,16 +21,16 @@
   "animations": [],
   "textures": [
    {
-    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_ALB.texture"
+    "path": "data/hd/items/weapon/spear/pike/weapon_pike_ALB.texture"
    },
    {
-    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_NRM.texture"
+    "path": "data/hd/items/weapon/spear/pike/weapon_pike_NRM.texture"
    },
    {
-    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_ORM.texture"
+    "path": "data/hd/items/weapon/spear/pike/weapon_pike_ORM.texture"
    },
    {
-    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_mask.texture"
+    "path": "data/hd/items/weapon/spear/pike/weapon_pike_mask.texture"
    },
    {
     "path": "data/hd/vfx/textures/mask/T_FX_KorlicAxe_fxMesh_mask.texture"
@@ -277,7 +277,7 @@
     {
      "type": "ModelDefinitionComponent",
      "name": "entity_model_components_ModelDefinitionComponent",
-     "filename": "data/hd/items/weapon/polearm/halberd/halberd.model",
+     "filename": "data/hd/items/weapon/spear/pike/pike.model",
      "visibleLayers": 1,
      "lightMask": 19,
      "shadowMask": 3,
