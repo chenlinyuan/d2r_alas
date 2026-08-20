@@ -7,7 +7,7 @@
   ],
   "models": [
    {
-    "path": "data/hd/items/weapon/axe/giant_axe/giant_axe.model"
+    "path": "data/hd/items/weapon/polearm/bardiche/bardiche.model"
    },
    {
     "path": "data/hd/vfx/meshes/fx_mesh_KorlicAxe.model"
@@ -21,16 +21,16 @@
   "animations": [],
   "textures": [
    {
-    "path": "data/hd/items/weapon/axe/giant_axe/weapon_giant_axe_ALB.texture"
+    "path": "data/hd/items/weapon/polearm/bardiche/weapon_bardiche_ALB.texture"
    },
    {
-    "path": "data/hd/items/weapon/axe/giant_axe/weapon_giant_axe_NRM.texture"
+    "path": "data/hd/items/weapon/polearm/bardiche/weapon_bardiche_NRM.texture"
    },
    {
-    "path": "data/hd/items/weapon/axe/giant_axe/weapon_giant_axe_ORM.texture"
+    "path": "data/hd/items/weapon/polearm/bardiche/weapon_bardiche_ORM.texture"
    },
    {
-    "path": "data/hd/items/weapon/axe/giant_axe/weapon_giant_axe_mask.texture"
+    "path": "data/hd/items/weapon/polearm/bardiche/weapon_bardiche_mask.texture"
    },
    {
     "path": "data/hd/vfx/textures/mask/T_FX_KorlicAxe_fxMesh_mask.texture"
@@ -277,7 +277,7 @@
     {
      "type": "ModelDefinitionComponent",
      "name": "entity_model_components_ModelDefinitionComponent",
-     "filename": "data/hd/items/weapon/axe/giant_axe/giant_axe.model",
+     "filename": "data/hd/items/weapon/polearm/bardiche/bardiche.model",
      "visibleLayers": 1,
      "lightMask": 19,
      "shadowMask": 3,
