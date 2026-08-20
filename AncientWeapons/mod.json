@@ -1,0 +1,7 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "先祖武器 (Ancient Weapons)",
+  "description": "先祖主题暗金武器合集：当前包含精英级暗金投掷斧「马道克之怒」，复用 Uber 马道克的手持武器模型与闪电附魔特效，投掷物使用巨型投掷斧（colossal throwing axe）。后续将加入对应科力克、塔力克的暗金武器。测试配方：任意武器 + 1 回城卷轴(tsc) → 马道克之怒。",
+  "author": "Codex",
+  "version": "4.0"
+}

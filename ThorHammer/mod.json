@@ -1,7 +1,0 @@
-{
-  "$schema": "../config-schema.json",
-  "name": "马道克之怒 (Madawc's Fury)",
-  "description": "新增精英级暗金投掷斧马道克之怒：复用 Uber 马道克的手持武器模型与闪电附魔特效，投掷物使用巨型投掷斧（colossal throwing axe），兼具闪电主题属性。测试配方：任意武器 + 1 回城卷轴(tsc) → 马道克之怒。",
-  "author": "Codex",
-  "version": "4.0"
-}

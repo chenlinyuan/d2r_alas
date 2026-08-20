@@ -1,4 +1,4 @@
-// Madawc's Fury (椹亾鍏嬩箣鎬? - custom elite unique throwing axe for D2RMM + Reimagined
+// Ancient Weapons - custom Ancients-themed unique weapons for D2RMM + Reimagined - custom elite unique throwing axe for D2RMM + Reimagined
 //
 // Adds a new unique on an elite Flying Axe base (code mwa) that reuses Uber
 // Madawc's actual held weapon asset (The Gnasher model + lightning-enchant
@@ -26,7 +26,7 @@ function readTsvSafe(fileName) {
     return D2RMM.readTsv(fileName, { removeCarriageReturns: true });
   } catch (error) {
     console.debug(
-      'ThorHammer: could not read ' + fileName + ' (' + error.message + '), skipping.'
+      'AncientWeapons: could not read ' + fileName + ' (' + error.message + '), skipping.'
     );
     return null;
   }
@@ -36,7 +36,7 @@ function writeTsvSafe(fileName, data) {
   try {
     D2RMM.writeTsv(fileName, data, { addCarriageReturns: true });
   } catch (error) {
-    console.warn('ThorHammer: could not write ' + fileName + ' (' + error.message + ').');
+    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
   }
 }
 
@@ -92,7 +92,7 @@ function upsertMadawcMissile() {
     const source = data.rows.find((row) => row.Missile === MADAWC_SOURCE_MISSILE_NAME);
     if (!source) {
       console.warn(
-        'ThorHammer: ' + MADAWC_SOURCE_MISSILE_NAME + ' missile missing in ' + fileName + ', skipping.'
+        'AncientWeapons: ' + MADAWC_SOURCE_MISSILE_NAME + ' missile missing in ' + fileName + ', skipping.'
       );
       return;
     }
@@ -102,7 +102,7 @@ function upsertMadawcMissile() {
       row = Object.assign({}, source);
       row.Missile = MADAWC_MISSILE_NAME;
       data.rows.push(row);
-      console.log('ThorHammer: created missile ' + MADAWC_MISSILE_NAME + ' (id ' + targetId + ') in ' + fileName);
+      console.log('AncientWeapons: created missile ' + MADAWC_MISSILE_NAME + ' (id ' + targetId + ') in ' + fileName);
     } else {
       const keepId = row['*ID'];
       Object.keys(row).forEach((key) => delete row[key]);
@@ -111,7 +111,7 @@ function upsertMadawcMissile() {
       });
       row.Missile = MADAWC_MISSILE_NAME;
       row['*ID'] = keepId;
-      console.log('ThorHammer: updated missile ' + MADAWC_MISSILE_NAME + ' in ' + fileName);
+      console.log('AncientWeapons: updated missile ' + MADAWC_MISSILE_NAME + ' in ' + fileName);
     }
 
     row['*ID'] = targetId;
@@ -140,11 +140,11 @@ function registerMadawcMissileHdAsset() {
   try {
     missiles = D2RMM.readJson(fileName);
   } catch (error) {
-    console.warn('ThorHammer: could not read ' + fileName + ' (' + error.message + ').');
+    console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
     return false;
   }
   if (!missiles || typeof missiles !== 'object' || Array.isArray(missiles)) {
-    console.warn('ThorHammer: unexpected missiles.json format in ' + fileName + '.');
+    console.warn('AncientWeapons: unexpected missiles.json format in ' + fileName + '.');
     return false;
   }
 
@@ -154,10 +154,10 @@ function registerMadawcMissileHdAsset() {
 
   try {
     D2RMM.writeJson(fileName, missiles);
-    console.log('ThorHammer: mapped ' + MADAWC_MISSILE_NAME + ' to ' + MADAWC_HD_ASSET_NAME + ' in ' + fileName);
+    console.log('AncientWeapons: mapped ' + MADAWC_MISSILE_NAME + ' to ' + MADAWC_HD_ASSET_NAME + ' in ' + fileName);
     return true;
   } catch (error) {
-    console.warn('ThorHammer: could not write ' + fileName + ' (' + error.message + ').');
+    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
     return false;
   }
 }
@@ -172,7 +172,7 @@ function addMadawcBase(missileId) {
 
     const flyingAxe = data.rows.find((row) => row.code === '7ta');
     if (!flyingAxe) {
-      console.warn('ThorHammer: Flying Axe (7ta) not found in ' + fileName + ', skipping.');
+      console.warn('AncientWeapons: Flying Axe (7ta) not found in ' + fileName + ', skipping.');
       return;
     }
 
@@ -181,10 +181,10 @@ function addMadawcBase(missileId) {
       row = Object.assign({}, flyingAxe);
       row.code = MADAWC_BASE_CODE;
       data.rows.push(row);
-      console.log('ThorHammer: created Madawc base weapon ' + MADAWC_BASE_CODE + ' in ' + fileName);
+      console.log('AncientWeapons: created Madawc base weapon ' + MADAWC_BASE_CODE + ' in ' + fileName);
     } else {
       // Reapply the base config on every install so partial installs recover.
-      console.log('ThorHammer: updating Madawc base weapon ' + MADAWC_BASE_CODE + ' in ' + fileName);
+      console.log('AncientWeapons: updating Madawc base weapon ' + MADAWC_BASE_CODE + ' in ' + fileName);
     }
 
     row.name = 'Flying Axe';
@@ -223,7 +223,7 @@ function addMadawcBase(missileId) {
     }
 
     writeTsvSafe(fileName, data);
-    console.log('ThorHammer: added Madawc base weapon ' + MADAWC_BASE_CODE + ' to ' + fileName);
+    console.log('AncientWeapons: added Madawc base weapon ' + MADAWC_BASE_CODE + ' to ' + fileName);
   });
 }
 
@@ -238,9 +238,9 @@ function addMadawcUniqueItem() {
     if (!row) {
       row = { index: MADAWC_UNIQUE_NAME };
       data.rows.push(row);
-      console.log('ThorHammer: created Madawc unique in ' + fileName);
+      console.log('AncientWeapons: created Madawc unique in ' + fileName);
     } else {
-      console.log('ThorHammer: updating Madawc unique in ' + fileName);
+      console.log('AncientWeapons: updating Madawc unique in ' + fileName);
     }
 
     row.version = '100';
@@ -277,7 +277,7 @@ function addMadawcUniqueItem() {
     }
 
     writeTsvSafe(fileName, data);
-    console.log('ThorHammer: added Madawc unique to ' + fileName);
+    console.log('AncientWeapons: added Madawc unique to ' + fileName);
   });
 }
 
@@ -288,11 +288,11 @@ function addMadawcStrings() {
   try {
     strings = D2RMM.readJson(fileName);
   } catch (error) {
-    console.warn('ThorHammer: could not read ' + fileName + ' (' + error.message + '), skipping Madawc strings.');
+    console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + '), skipping Madawc strings.');
     return;
   }
   if (!Array.isArray(strings)) {
-    console.warn('ThorHammer: unexpected item-names.json format, skipping Madawc strings.');
+    console.warn('AncientWeapons: unexpected item-names.json format, skipping Madawc strings.');
     return;
   }
 
@@ -334,10 +334,10 @@ function addMadawcStrings() {
   try {
     D2RMM.writeJson(fileName, strings);
   } catch (error) {
-    console.warn('ThorHammer: could not write ' + fileName + ' (' + error.message + ').');
+    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
     return;
   }
-  console.log('ThorHammer: added Madawc item names to ' + fileName);
+  console.log('AncientWeapons: added Madawc item names to ' + fileName);
 }
 
 // Maps the new base code to the custom Madawc held-weapon asset. D2R looks
@@ -352,11 +352,11 @@ function addMadawcHdMapping() {
   try {
     items = D2RMM.readJson(fileName);
   } catch (error) {
-    console.warn('ThorHammer: could not read ' + fileName + ' (' + error.message + ').');
+    console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
     return;
   }
   if (!Array.isArray(items)) {
-    console.warn('ThorHammer: unexpected items.json format in ' + fileName + '.');
+    console.warn('AncientWeapons: unexpected items.json format in ' + fileName + '.');
     return;
   }
 
@@ -369,9 +369,9 @@ function addMadawcHdMapping() {
 
   try {
     D2RMM.writeJson(fileName, items);
-    console.log('ThorHammer: mapped ' + MADAWC_BASE_CODE + ' to ' + MADAWC_ITEM_ASSET + ' in ' + fileName);
+    console.log('AncientWeapons: mapped ' + MADAWC_BASE_CODE + ' to ' + MADAWC_ITEM_ASSET + ' in ' + fileName);
   } catch (error) {
-    console.warn('ThorHammer: could not write ' + fileName + ' (' + error.message + ').');
+    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
   }
 }
 
@@ -384,11 +384,11 @@ function addMadawcUniqueHdMapping() {
   try {
     uniques = D2RMM.readJson(fileName);
   } catch (error) {
-    console.warn('ThorHammer: could not read ' + fileName + ' (' + error.message + ').');
+    console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
     return;
   }
   if (!Array.isArray(uniques)) {
-    console.warn('ThorHammer: unexpected uniques.json format in ' + fileName + '.');
+    console.warn('AncientWeapons: unexpected uniques.json format in ' + fileName + '.');
     return;
   }
 
@@ -407,9 +407,9 @@ function addMadawcUniqueHdMapping() {
 
   try {
     D2RMM.writeJson(fileName, uniques);
-    console.log('ThorHammer: mapped unique ' + MADAWC_UNIQUE_NAME + ' to ' + MADAWC_ITEM_ASSET + ' in ' + fileName);
+    console.log('AncientWeapons: mapped unique ' + MADAWC_UNIQUE_NAME + ' to ' + MADAWC_ITEM_ASSET + ' in ' + fileName);
   } catch (error) {
-    console.warn('ThorHammer: could not write ' + fileName + ' (' + error.message + ').');
+    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
   }
 }
 
@@ -431,15 +431,15 @@ function addMadawcUniqueHdMapping() {
 function copyMadawcAssets() {
   try {
     D2RMM.copyFile('assets\\madawc_fury.json', MADAWC_ITEM_JSON, true);
-    console.log('ThorHammer: copied Madawc held-weapon asset to ' + MADAWC_ITEM_JSON);
+    console.log('AncientWeapons: copied Madawc held-weapon asset to ' + MADAWC_ITEM_JSON);
   } catch (error) {
-    console.warn('ThorHammer: could not copy Madawc held-weapon asset (' + error.message + ').');
+    console.warn('AncientWeapons: could not copy Madawc held-weapon asset (' + error.message + ').');
   }
   try {
     D2RMM.copyFile('assets\\madawc_fury.sprite', MADAWC_ICON_DST, true);
-    console.log('ThorHammer: copied Madawc inventory icon to ' + MADAWC_ICON_DST);
+    console.log('AncientWeapons: copied Madawc inventory icon to ' + MADAWC_ICON_DST);
   } catch (error) {
-    console.warn('ThorHammer: could not copy Madawc inventory icon (' + error.message + ').');
+    console.warn('AncientWeapons: could not copy Madawc inventory icon (' + error.message + ').');
   }
 }
 
@@ -450,7 +450,7 @@ function addMadawcCraftRecipe() {
     const cubemain = readTsvSafe(fileName);
     if (!cubemain) return;
     if (cubemain.headers.indexOf('lvl') === -1) {
-      console.warn('ThorHammer: unsupported cubemain layout in ' + fileName + ', skipping Madawc recipe.');
+      console.warn('AncientWeapons: unsupported cubemain layout in ' + fileName + ', skipping Madawc recipe.');
       return;
     }
 
@@ -490,7 +490,7 @@ function addMadawcCraftRecipe() {
     }
 
     writeTsvSafe(fileName, cubemain);
-    console.log('ThorHammer: added Madawc craft recipe to ' + fileName);
+    console.log('AncientWeapons: added Madawc craft recipe to ' + fileName);
   });
 }
 
@@ -503,7 +503,7 @@ if (customMadawcMissileId && registerMadawcMissileHdAsset()) {
   madawcMissile = customMadawcMissileId;
 } else {
   console.warn(
-    'ThorHammer: Madawc custom missile unavailable, using ' +
+    'AncientWeapons: Madawc custom missile unavailable, using ' +
       MADAWC_SOURCE_MISSILE_NAME +
       ' (' +
       madawcMissile +
