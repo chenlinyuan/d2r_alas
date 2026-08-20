@@ -7,7 +7,7 @@
     ],
     "models": [
       {
-        "path": "data/hd/items/weapon/axe/_monsters/korlic_battle_axe/korlic_battle_axe.model"
+        "path": "data/hd/items/weapon/axe/korlics_might/korlic_battle_axe.model"
       },
       {
         "path": "data/hd/vfx/meshes/fx_mesh_KorlicAxe.model"
@@ -274,7 +274,7 @@
         {
           "type": "ModelDefinitionComponent",
           "name": "entity_model_components_ModelDefinitionComponent",
-          "filename": "data/hd/items/weapon/axe/_monsters/korlic_battle_axe/korlic_battle_axe.model",
+          "filename": "data/hd/items/weapon/axe/korlics_might/korlic_battle_axe.model",
           "visibleLayers": 1,
           "lightMask": 19,
           "shadowMask": 3,

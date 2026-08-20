@@ -732,7 +732,11 @@ function addKorlicUniqueHdMapping() {
   }
 }
 
-// Copies the Korlic held-weapon asset and its inventory sprite into the output.
+// Copies the Korlic held-weapon asset, its inventory sprite, and the Korlic
+// battle-axe model LODs into the output. The model is copied OUT of the
+// vanilla _monsters/ folder into a player-style folder (hd/items/weapon/axe/
+// korlics_might/) — referencing it directly from _monsters/ did not render the
+// axe model when held by a player character.
 function copyKorlicAssets() {
   try {
     D2RMM.copyFile('assets\\korlics_might.json', KORLIC_ITEM_JSON, true);
@@ -745,6 +749,15 @@ function copyKorlicAssets() {
     console.log('AncientWeapons: copied Korlic inventory icon to ' + KORLIC_ICON_DST);
   } catch (error) {
     console.warn('AncientWeapons: could not copy Korlic inventory icon (' + error.message + ').');
+  }
+  for (let lod = 0; lod <= 4; lod += 1) {
+    const src = 'assets\\korlic_battle_axe\\korlic_battle_axe_lod' + lod + '.model';
+    const dst = 'hd\\items\\weapon\\axe\\korlics_might\\korlic_battle_axe_lod' + lod + '.model';
+    try {
+      D2RMM.copyFile(src, dst, true);
+    } catch (error) {
+      console.warn('AncientWeapons: could not copy Korlic model lod' + lod + ' (' + error.message + ').');
+    }
   }
 }
 
