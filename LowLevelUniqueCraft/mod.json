@@ -1,0 +1,19 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "低级暗金合成 (Low Level Unique Craft)",
+  "description": "通过赫拉迪克方块，用任意武器/防具（护身符/戒指/项链/珠宝除外）+ 1 个辨识卷轴，合成为对应底材的暗金装备。使用通用的 weap/armo 类型配方，不枚举底材；配方产出的物品等级（ilvl）固定为上限值（默认 10）。注意：如果底材对应暗金的品质等级高于上限，合成不会失败，而是降级为同底材的稀有物品（游戏机制如此）。",
+  "author": "Codex",
+  "website": "",
+  "version": "1.0",
+  "config": [
+    {
+      "id": "maxLevel",
+      "type": "number",
+      "name": "暗金品质等级上限",
+      "description": "只有对应暗金物品的品质等级（UniqueItems.txt 中的 lvl 列）不高于该值的底材才会生成合成配方；配方产出的物品等级（ilvl）也固定为该值。默认 10。",
+      "defaultValue": 10,
+      "minValue": 1,
+      "maxValue": 99
+    }
+  ]
+}

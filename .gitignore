@@ -1,0 +1,14 @@
+# Exclude the Reimagined full-overhaul data (large, external)
+Reimagined.mpq/
+Reimagined.mpq.lnk
+
+# Editor / OS noise
+.vscode/
+Thumbs.db
+Desktop.ini
+
+# Backup / temp files
+*.bak*
+*.orig
+*.old
+*.backup

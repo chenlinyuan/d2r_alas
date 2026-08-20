@@ -1,0 +1,18 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "经验药水 (Exp Potion)",
+  "description": "把 Reimagined 自带的经验药水(Experience Potion)改成 1 金币，喝一口升 1 级（可在配置里改成每口升多级），方便测试角色等级。阿卡拉杂项页出售。已移除头顶的经验祭坛图标，pSpell 改为 4 以保持可饮用，物品描述改为「获得升 N 级所需经验」并跟随配置显示。注意引擎限制：喝完后经验条会直接充满，升级在下次获得经验（杀掉 1 只怪）时结算，请勿一次连喝多瓶。",
+  "author": "Codex",
+  "version": "1.3",
+  "config": [
+    {
+      "id": "levelsPerDrink",
+      "type": "number",
+      "name": "每口升级数",
+      "description": "喝一瓶经验药水升几级。1 = 升 1 级（给足升到下一级所需的经验）。",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 99
+    }
+  ]
+}

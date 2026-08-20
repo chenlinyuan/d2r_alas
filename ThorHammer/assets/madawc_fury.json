@@ -1,0 +1,367 @@
+{
+  "dependencies": {
+    "particles": [
+      {
+        "path": "data/hd/vfx/particles/overlays/monster/lightningenchant/vfx_lightningenchant.particles"
+      }
+    ],
+    "models": [
+      {
+        "path": "data/hd/items/weapon/axe/the_gnasher/the_gnasher.model"
+      }
+    ],
+    "skeletons": [
+      {
+        "path": "data/hd/items/dropped_items/skeleton/dropped_items.skeleton"
+      }
+    ],
+    "animations": [],
+    "textures": [
+      {
+        "path": "data/hd/items/weapon/axe/the_gnasher/weapon_the_gnasher_ALB.texture"
+      },
+      {
+        "path": "data/hd/items/weapon/axe/the_gnasher/weapon_the_gnasher_mask.texture"
+      },
+      {
+        "path": "data/hd/items/weapon/axe/the_gnasher/weapon_the_gnasher_NRM.texture"
+      },
+      {
+        "path": "data/hd/items/weapon/axe/the_gnasher/weapon_the_gnasher_ORM.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/mask/T_FX_Circle_mask_03.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/gradient/T_FX_mephistoSpirit_Fresnel_Gradient.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/energy/T_FX_Lightning_Rune_Atlas_03.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/mask/FX_T_HOGM_Trail_01.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/geo/T_FX_Noise_Plasma_Ropey_02_RGB.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/distortion/T_FX_gaussian_distortion_strong.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/default/White.texture"
+      },
+      {
+        "path": "data/hd/character/common/common_cloud_threshold.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/gradient/T_FX_linearGradient_horizontal.texture"
+      }
+    ],
+    "physics": [],
+    "json": [
+      {
+        "path": "data/hd/items/dropped_items/dropped_items_ne_left.json"
+      }
+    ],
+    "variantdata": [],
+    "objecteffects": [
+      {
+        "path": "data/hd/vfx/particles/overlays/warlock/eldritch_weapon_outlines/levitate/axe/unique_axes/vfx_levitating_the_gnasher_objectFX.particles",
+        "dependency": ""
+      }
+    ],
+    "other": []
+  },
+  "type": "UnitDefinition",
+  "name": "madawc_fury",
+  "entities": [
+    {
+      "type": "Entity",
+      "name": "entity_root",
+      "id": 554284328,
+      "components": [
+        {
+          "type": "UnitRootComponent",
+          "name": "entity_root_components_UnitRootComponent",
+          "state_machine_filename": "data/hd/items/dropped_items/dropped_items_ne_left.json",
+          "doNotInheritRotation": false,
+          "rotationOverride": {
+            "x": 0,
+            "y": 0.3826834,
+            "z": 0,
+            "w": 0.9238795
+          },
+          "doNotUseHDHeight": false,
+          "hideAllMeshWhenInOpenedMode": false,
+          "onCreateEventName": "",
+          "animations": []
+        },
+        {
+          "type": "SkeletonDefinitionComponent",
+          "name": "entity_root_components_SkeletonDefinitionComponent",
+          "filename": "data/hd/items/dropped_items/skeleton/dropped_items.skeleton",
+          "enableWeaponAttachInertialization": false
+        },
+        {
+          "type": "TransformDefinitionComponent",
+          "name": "entity_root_components_TransformDefinitionComponent",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0,
+            "y": 0.233445361,
+            "z": 0,
+            "w": 0.9723699
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "inheritOnlyPosition": false
+        },
+        {
+          "type": "OverrideAttachmentTransformComponent",
+          "name": "entity_root_components_OverrideAttachmentTransformComponent",
+          "playerClassTransforms": {
+            "0": {
+              "type": "Transform",
+              "name": "entity_root_components_OverrideAttachmentTransformComponent_playerClassTransforms_Amazon",
+              "translation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1.05,
+                "y": 1.1,
+                "z": 1.1
+              }
+            },
+            "1": {
+              "type": "Transform",
+              "name": "entity_root_components_OverrideAttachmentTransformComponent_playerClassTransforms_Sorceress",
+              "translation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.9,
+                "y": 0.95,
+                "z": 0.95
+              }
+            },
+            "2": {
+              "type": "Transform",
+              "name": "entity_root_components_OverrideAttachmentTransformComponent_playerClassTransforms_Necromancer",
+              "translation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.97,
+                "y": 1.02,
+                "z": 1.02
+              }
+            },
+            "3": {
+              "type": "Transform",
+              "name": "entity_root_components_OverrideAttachmentTransformComponent_playerClassTransforms_Paladin",
+              "translation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1.1,
+                "y": 1.15,
+                "z": 1.15
+              }
+            },
+            "4": {
+              "type": "Transform",
+              "name": "entity_root_components_OverrideAttachmentTransformComponent_playerClassTransforms_Barbarian",
+              "translation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.92,
+                "y": 0.97,
+                "z": 0.97
+              }
+            },
+            "5": {
+              "type": "Transform",
+              "name": "entity_root_components_OverrideAttachmentTransformComponent_playerClassTransforms_Druid",
+              "translation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1.1,
+                "y": 1.15,
+                "z": 1.15
+              }
+            },
+            "6": {
+              "type": "Transform",
+              "name": "entity_root_components_OverrideAttachmentTransformComponent_playerClassTransforms_Assassin",
+              "translation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1.05,
+                "z": 1.05
+              }
+            },
+            "7": {
+              "type": "Transform",
+              "name": "entity_root_components_OverrideAttachmentTransformComponent_playerClassTransforms_Warlock",
+              "translation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.97,
+                "y": 1.02,
+                "z": 1.02
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Entity",
+      "name": "entity_model",
+      "id": 1311543926,
+      "components": [
+        {
+          "type": "ModelDefinitionComponent",
+          "name": "entity_model_components_ModelDefinitionComponent",
+          "filename": "data/hd/items/weapon/axe/the_gnasher/the_gnasher.model",
+          "visibleLayers": 1,
+          "lightMask": 19,
+          "shadowMask": 3,
+          "ghostShadows": false,
+          "floorModel": false,
+          "terrainBlendEnableYUpBlend": false,
+          "terrainBlendMode": 1
+        },
+        {
+          "type": "ObjectEffectDefinitionComponent",
+          "name": "entity_model_components_ObjectEffectDefinitionComponent",
+          "filename": "data/hd/vfx/particles/overlays/warlock/eldritch_weapon_outlines/levitate/axe/unique_axes/vfx_levitating_the_gnasher_objectFX.particles",
+          "isWarlockWeaponVfx": true
+        },
+        {
+          "type": "TransformDefinitionComponent",
+          "name": "entity_model_TransformDefinition",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
+          },
+          "scale": {
+            "x": 1.3,
+            "y": 1.3,
+            "z": 1.3
+          },
+          "inheritOnlyPosition": false
+        }
+      ]
+    },
+    {
+      "type": "Entity",
+      "name": "entity_vfx",
+      "id": 2928374655,
+      "components": [
+        {
+          "type": "VfxDefinitionComponent",
+          "name": "entity_vfx_VfxDefinition",
+          "filename": "data/hd/vfx/particles/overlays/monster/lightningenchant/vfx_lightningenchant.particles",
+          "hardKillOnDestroy": true
+        },
+        {
+          "type": "TransformDefinitionComponent",
+          "name": "entity_vfx_TransformDefinition",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "orientation": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
+          },
+          "scale": {
+            "x": 0.85,
+            "y": 0.85,
+            "z": 0.85
+          },
+          "inheritOnlyPosition": false
+        }
+      ]
+    }
+  ]
+}

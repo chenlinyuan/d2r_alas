@@ -1,0 +1,149 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "暗金特殊视觉 (Unique Item Visuals)",
+  "description": "给指定暗金装备/符文之语添加装备时的特殊视觉状态。当前：雷神之锤=静态金色锤子本体(blessedhammer.model)，并把术士原生的WarlockEffectsDefinitionComponent注入全职业玩家模型，通过vfxweaponstate状态让装备中的武器带金色fresnel+描边发光(不再叠加第二把旋转锤子；hammerGlow*控制锤子本体)；泰瑞尔的力量=金色翅膀；圣堂武士的力量=白鬼火+金色光环；谜团(Enigma)=冰火翅膀；刚毅=冰、荆棘=毒、飞龙=火、强制=血、和平=白(符文之语衣服)；利维亚桑=血、守护天使=白、都瑞尔的壳=冰(暗金衣服)。测试配方：任意衣服+9号符文=隐藏被动翅膀(跟随配置样式)；+10号=圣堂武士的力量；+11号=3孔白色法师铠甲(谜团底材)，再按序镶入Jah+Ith+Ber即为真谜团(翅膀来自谜团绑定)；+12号=利维亚桑(血)；+13号=守护天使(白，可能随机到同底材其它暗金，多合几次)；+14号=都瑞尔的壳(冰，同理)；任意衣服+回城卷轴=泰瑞尔的力量。注：引擎不支持合成公式直接生成完整符文之语；overlay不支持骨骼绑定(原版115个overlay均无EntityAttachmentDefinition)；states的itemtrans在HD下不渲染、对金色锤子不可见，已弃用；已移除1~8号符文测试配方(曾借用亚马逊被动状态导致学技能后常驻翅膀)。",
+  "author": "Codex",
+  "version": "1.49",
+  "config": [
+    {
+      "id": "alwaysOn",
+      "type": "checkbox",
+      "name": "全职业常驻翅膀",
+      "description": "开启后，所有职业常驻显示翅膀（直接注入玩家模型）。关闭后改为装备驱动的叠加层方式：只有装备雷神之锤时才显示翅膀（HD 模式）。",
+      "defaultValue": false
+    },
+    {
+      "id": "wingStyle",
+      "type": "select",
+      "name": "翅膀样式 (HD)",
+      "description": "翅膀配色：wisp 白色、wispGold 白色+金色光环、wispGolden 金色改色、wispRed 血色改色、wispIce 冰、wispFire 火、wispPoison 毒、wispIceFire 左冰右火。常驻模式所有角色显示所选样式；雷神之锤装备时显示金色翅膀；「任意衣服 + 1~8号符文」合成后固定显示对应翅膀（借用 255 以内已有空状态，测试中）；「任意衣服 + 9号符文」测试 oskill 方案（隐藏被动挂高位状态 ID 300，不显示词条）；泰瑞尔的力量（让怪物安息→金色翅膀，移动速度+20→40）；圣堂武士的力量绑白鬼火+金色光环翅膀；谜团符文之语绑冰火翅膀（+14生命恢复换成翅膀，专用高位状态 302）；「任意衣服 + 回城卷轴」生成泰瑞尔的力量、「任意衣服 + 10号符文」生成圣堂武士的力量。",
+      "defaultValue": "wispGolden",
+      "options": [
+        {
+          "label": "小鬼火翅膀（参考 mod）",
+          "value": "wisp",
+          "description": "与 N 网 tiny wings 相同的小鬼火翅膀，已验证可稳定显示。"
+        },
+        {
+          "label": "鬼火翅膀 + 金色光环",
+          "value": "wispGold",
+          "description": "白色鬼火翅膀，背后叠加圣骑士狂热光环（金色光晕），已验证可稳定显示。"
+        },
+        {
+          "label": "金色鬼火翅膀（改色方案）",
+          "value": "wispGolden",
+          "description": "将鬼火渐变图集重新着色为金色并配套金色粒子文件，翅膀本体呈金色，叠加金色光环。"
+        },
+        {
+          "label": "血色鬼火翅膀（改色方案）",
+          "value": "wispRed",
+          "description": "将鬼火渐变图集重新着色为暗红血色，翅膀本体呈血色，叠加圣火红色光环。"
+        },
+        {
+          "label": "冰鬼火翅膀",
+          "value": "wispIce",
+          "description": "冰蓝到白的渐变，接近游戏中冰系法术的色调。"
+        },
+        {
+          "label": "火鬼火翅膀",
+          "value": "wispFire",
+          "description": "火焰橙红到黄的渐变，接近游戏中火系法术的色调。"
+        },
+        {
+          "label": "毒鬼火翅膀",
+          "value": "wispPoison",
+          "description": "毒绿到浅绿的渐变，接近游戏中毒素法术的色调。"
+        },
+        {
+          "label": "冰火鬼火翅膀",
+          "value": "wispIceFire",
+          "description": "左翅冰蓝、右翅火焰橙红，配色已调整为接近游戏冰火法术的色调。"
+        },
+        {
+          "label": "关闭",
+          "value": "none",
+          "description": "不注入任何翅膀粒子。"
+        }
+      ]
+    },
+    {
+      "id": "wingX",
+      "type": "number",
+      "name": "翅膀左右间距 (装备触发版)",
+      "description": "装备触发模式下翅膀的左右偏移。正数 = 左右各向外 x。改完点重新安装生效。",
+      "defaultValue": 1.2,
+      "minValue": -20,
+      "maxValue": 20
+    },
+    {
+      "id": "wingY",
+      "type": "number",
+      "name": "翅膀高度 (装备触发版)",
+      "description": "装备触发模式下翅膀的竖直位置（越大越高）。",
+      "defaultValue": 5.4,
+      "minValue": -3,
+      "maxValue": 12
+    },
+    {
+      "id": "wingZ",
+      "type": "number",
+      "name": "翅膀前后 (装备触发版)",
+      "description": "装备触发模式下翅膀的前后位置（负 = 身后，正 = 身前）。",
+      "defaultValue": -1.6,
+      "minValue": -20,
+      "maxValue": 20
+    },
+    {
+      "id": "wingTilt",
+      "type": "number",
+      "name": "翅膀倾斜 (装备触发版)",
+      "description": "装备触发模式下翅膀尾迹的倾斜量（正负号决定尾迹甩向内侧还是外侧，0 = 不倾斜）。",
+      "defaultValue": 0.6,
+      "minValue": -1,
+      "maxValue": 1
+    },
+    {
+      "id": "hammerGlowEnabled",
+      "type": "checkbox",
+      "name": "手持金色锤子模型",
+      "description": "开启后雷神之锤的手持(及落地)模型直接换成投掷时同款的金色锤子网格（静态、不旋转）。改完点重新安装生效。",
+      "defaultValue": true
+    },
+    {
+      "id": "hammerGlowScale",
+      "type": "number",
+      "name": "金色锤子大小",
+      "description": "金色锤子模型的缩放（默认 1.0，配合底材自带的 1.25 手持缩放）。改完点重新安装生效。",
+      "defaultValue": 1.0,
+      "minValue": 0.05,
+      "maxValue": 10
+    },
+    {
+      "id": "hammerGlowY",
+      "type": "number",
+      "name": "金色锤子高度",
+      "description": "金色锤子模型相对握点的竖直偏移（正=向上，默认 -0.2 让手落在握把中部）。",
+      "defaultValue": -0.2,
+      "minValue": -5,
+      "maxValue": 5
+    },
+    {
+      "id": "hammerGlowX",
+      "type": "number",
+      "name": "金色锤子左右",
+      "description": "金色锤子模型的左右偏移（正 = 角色右侧）。",
+      "defaultValue": 0,
+      "minValue": -5,
+      "maxValue": 5
+    },
+    {
+      "id": "hammerGlowZ",
+      "type": "number",
+      "name": "金色锤子前后",
+      "description": "金色锤子模型的前后偏移（正 = 身前）。",
+      "defaultValue": 0,
+      "minValue": -5,
+      "maxValue": 5
+    }
+  ]
+}

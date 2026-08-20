@@ -1,0 +1,28 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "符文商人 (Rune Vendor)",
+  "description": "让第一幕阿卡拉(Akara)的商店以 1 金币出售全部 33 种符文(El~Zod)，默认放在新增的符文标签页(Rune Page)里。",
+  "author": "Codex",
+  "version": "1.0",
+  "config": [
+    {
+      "id": "tabPlacement",
+      "type": "select",
+      "name": "符文显示位置",
+      "description": "新符文栏：在商店里新增一个 Rune Page 标签页专门卖符文；杂项栏：把符文放回阿卡拉的 Misc(杂项)标签页，作为备用方案（若你的 D2R 版本不显示第 5 个标签）。",
+      "defaultValue": "runeTab",
+      "options": [
+        {
+          "label": "新符文栏 (默认)",
+          "value": "runeTab",
+          "description": "新增 Rune Page 标签页，符文单独显示。"
+        },
+        {
+          "label": "杂项栏 (备用)",
+          "value": "miscTab",
+          "description": "符文显示在阿卡拉的 Misc(杂项)标签页，与多数现成 mod 一致。"
+        }
+      ]
+    }
+  ]
+}

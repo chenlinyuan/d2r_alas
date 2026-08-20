@@ -1,0 +1,195 @@
+{
+  "name": "Elemental Sword Skins – Fire & Ice Edition",
+  "description": "This mod adds stunning visual transformations to your swords, allowing you to choose between flaming blades or frost-covered weapons.",
+  "author": "Emu",
+  "website": "",
+  "version": "1.0.4",
+  "config": [
+        {
+            "id": "sword_type",
+            "type": "select",
+            "name": "Select Sword Type",
+            "description": "Select the sword type (Fire Sword or Ice Sword).",
+            "defaultValue": "Flaming Sword 1",
+            "options": [
+                {
+                    "label": "Flaming Sword 1",
+                    "value": "Flaming Sword 1"
+                },
+                {
+                    "label": "Flaming Sword 2",
+                    "value": "Flaming Sword 2"
+                },
+                {
+                    "label": "Flaming Sword 3",
+                    "value": "Flaming Sword 3"
+                },
+                {
+                    "label": "Flaming Sword 4",
+                    "value": "Flaming Sword 4"
+                },
+                {
+                    "label": "Flaming Sword 5",
+                    "value": "Flaming Sword 5"
+                },
+                {
+                    "label": "Flaming Sword 6",
+                    "value": "Flaming Sword 6"
+                },
+                {
+                    "label": "Icy Sword 1",
+                    "value": "Icy Sword 1"
+                },
+                {
+                    "label": "Icy Sword 2",
+                    "value": "Icy Sword 2"
+                },
+                {
+                    "label": "Icy Sword 3",
+                    "value": "Icy Sword 3"
+                },
+                {
+                    "label": "Lightning Sword 1",
+                    "value": "Lightning Sword 1"
+                },
+                {
+                    "label": "Lightning Sword 2",
+                    "value": "Lightning Sword 2"
+                },
+                {
+                    "label": "Lightning Sword 3",
+                    "value": "Lightning Sword 3"
+                },
+                {
+                    "label": "Poison Sword 1",
+                    "value": "Poison Sword 1"
+                },
+                {
+                    "label": "Poison Sword 2",
+                    "value": "Poison Sword 2"
+                }
+            ]
+        },
+        {
+            "id": "base_sword",
+            "type": "select",
+            "name": "Select Base Sword",
+            "description": "Select the base sword.",
+            "defaultValue": "sword\\crystal_sword.json",
+            "options": [
+                {
+                "label": "Bastard Sword",
+                "value": "sword\\bastard_sword.json"
+                },
+                {
+                "label": "Blacktongue",
+                "value": "sword\\blacktongue.json"
+                },
+                {
+                "label": "Blood Crescent",
+                "value": "sword\\blood_crescent.json"
+                },
+                {
+                "label": "Broad Sword",
+                "value": "sword\\broad_sword.json"
+                },
+                {
+                "label": "Claymore",
+                "value": "sword\\claymore.json"
+                },
+                {
+                "label": "Crystal Sword",
+                "value": "sword\\crystal_sword.json"
+                },
+                {
+                "label": "Falchion",
+                "value": "sword\\falchion.json"
+                },
+                {
+                "label": "Flamberge",
+                "value": "sword\\flamberge.json"
+                },
+                {
+                "label": "Giant Sword",
+                "value": "sword\\giant_sword.json"
+                },
+                {
+                "label": "Ginthers Rift",
+                "value": "sword\\ginthers_rift.json"
+                },
+                {
+                "label": "Gleamscythe",
+                "value": "sword\\gleamscythe.json"
+                },
+                {
+                "label": "Great Sword",
+                "value": "sword\\great_sword.json"
+                },
+                {
+                "label": "Griswolds Edge",
+                "value": "sword\\griswolds_edge.json"
+                },
+                {
+                "label": "Hellplague",
+                "value": "sword\\hellplague.json"
+                },
+                {
+                "label": "Hexfire",
+                "value": "sword\\hexfire.json"
+                },
+                {
+                "label": "Kinemils Awl",
+                "value": "sword\\kinemils_awl.json"
+                },
+                {
+                "label": "Krintizs Skewer",
+                "value": "sword\\krintizs_skewer.json"
+                },
+                {
+                "label": "Lightsabre",
+                "value": "sword\\lightsabre.json"
+                },
+                {
+                "label": "Long Sword",
+                "value": "sword\\long_sword.json"
+                },
+                {
+                "label": "Plague Bearer",
+                "value": "sword\\plague_bearer.json"
+                },
+                {
+                "label": "Saber",
+                "value": "sword\\saber.json"
+                },
+                {
+                "label": "Scimitar",
+                "value": "sword\\scimitar.json"
+                },
+                {
+                "label": "Shadowfang",
+                "value": "sword\\shadowfang.json"
+                },
+                {
+                "label": "Short Sword",
+                "value": "sword\\short_sword.json"
+                },
+                {
+                "label": "The Patriarch",
+                "value": "sword\\the_patriarch.json"
+                },
+                {
+                "label": "Todesfaelle Flamme",
+                "value": "sword\\todesfaelle_flamme.json"
+                },
+                {
+                "label": "Two-Handed Sword",
+                "value": "sword\\two_handed_sword.json"
+                },
+                {
+                "label": "War Sword",
+                "value": "sword\\war_sword.json"
+                }
+            ]
+        }
+    ]
+}
