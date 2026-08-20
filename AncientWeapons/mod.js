@@ -1,11 +1,12 @@
-// Ancient Weapons - custom Ancients-themed unique weapons for D2RMM + Reimagined - custom elite unique throwing axe for D2RMM + Reimagined
+// Ancient Weapons - custom Ancients-themed unique weapons for D2RMM + Reimagined.
+// - Madawc's Fury: elite throwing axe on base mwa, reuses Uber Madawc's held
+//   weapon asset (The Gnasher model + lightning-enchant object VFX).
+// - Korlic's Might: elite 2H battle axe on base kwa, reuses Uber Korlic's held
+//   weapon asset (korlic_battle_axe model + cold-enchant object VFX).
 //
-// Adds a new unique on an elite Flying Axe base (code mwa) that reuses Uber
-// Madawc's actual held weapon asset (The Gnasher model + lightning-enchant
-// object VFX) and the colossal throwing axe missile, so both the hand-held
-// look and the thrown projectile match Madawc exactly.
-//
-// Test craft recipe: any weapon + Town Portal scroll -> Madawc's Fury.
+// Test craft recipes:
+//   any weapon + Town Portal scroll (tsc) -> Madawc's Fury
+//   any weapon + Identify scroll (isc)   -> Korlic's Might
 
 // Madawc's Fury: an elite Flying Axe unique that reuses Uber Madawc's actual
 // held weapon asset (The Gnasher model + lightning-enchant object VFX) and the
@@ -20,6 +21,16 @@ const MADAWC_FALLBACK_MISSILE = '732';
 const MADAWC_ITEM_ASSET = 'axe/madawc_fury';
 const MADAWC_ITEM_JSON = 'hd\\items\\weapon\\axe\\madawc_fury.json';
 const MADAWC_ICON_DST = 'hd\\global\\ui\\items\\weapon\\axe\\madawc_fury.sprite';
+
+// Korlic's Might: an elite 2H battle axe unique that reuses Uber Korlic's
+// actual held weapon asset (the korlic_battle_axe model + cold-enchant object
+// VFX). The cold/ice theme mirrors Uber Korlic's kit (Cold Enchant, Blizzard,
+// Korlic's Cold Pierce, Korlic's Bash).
+const KORLIC_BASE_CODE = 'kwa';
+const KORLIC_UNIQUE_NAME = "Korlic's Might";
+const KORLIC_ITEM_ASSET = 'axe/korlics_might';
+const KORLIC_ITEM_JSON = 'hd\\items\\weapon\\axe\\korlics_might.json';
+const KORLIC_ICON_DST = 'hd\\global\\ui\\items\\weapon\\axe\\korlics_might.sprite';
 
 function readTsvSafe(fileName) {
   try {
@@ -494,8 +505,294 @@ function addMadawcCraftRecipe() {
   });
 }
 
-// Let Amazon's Lightning Fury accept the custom "thmx" flying-hammer item
-// type in addition to javelins. This keeps vanilla javelins working while
+// Adds the custom 2H battle-axe base (kwa) used by Korlic's Might. It is a
+// clone of the elite Champion Axe (7ga): 2H 59-94, speed -10, wclass stf, but
+// with a lower level/req so the unique is testable in early game.
+function addKorlicBase() {
+  ['global\\excel\\weapons.txt', 'global\\excel\\base\\weapons.txt'].forEach((fileName) => {
+    const data = readTsvSafe(fileName);
+    if (!data) return;
+
+    const championAxe = data.rows.find((row) => row.code === '7ga');
+    if (!championAxe) {
+      console.warn('AncientWeapons: Champion Axe (7ga) not found in ' + fileName + ', skipping Korlic base.');
+      return;
+    }
+
+    let row = data.rows.find((r) => r.code === KORLIC_BASE_CODE);
+    if (!row) {
+      row = Object.assign({}, championAxe);
+      row.code = KORLIC_BASE_CODE;
+      data.rows.push(row);
+      console.log('AncientWeapons: created Korlic base weapon ' + KORLIC_BASE_CODE + ' in ' + fileName);
+    } else {
+      console.log('AncientWeapons: updating Korlic base weapon ' + KORLIC_BASE_CODE + ' in ' + fileName);
+    }
+
+    row.name = 'Champion Axe';
+    row.type = 'axe';
+    row.type2 = championAxe.type2 || 'slam';
+    row.namestr = KORLIC_BASE_CODE;
+    row.normcode = KORLIC_BASE_CODE;
+    row.ubercode = KORLIC_BASE_CODE;
+    row.ultracode = KORLIC_BASE_CODE;
+    row.mindam = championAxe.mindam || '';
+    row.maxdam = championAxe.maxdam || '';
+    row['2handmindam'] = championAxe['2handmindam'] || '59';
+    row['2handmaxdam'] = championAxe['2handmaxdam'] || '94';
+    row.speed = championAxe.speed || '-10';
+    row.reqstr = championAxe.reqstr || '';
+    row.reqdex = championAxe.reqdex || '';
+    row.level = '56';
+    row.levelreq = '42';
+    row.wclass = championAxe.wclass || 'stf';
+    row['2handedwclass'] = championAxe['2handedwclass'] || 'stf';
+    row.invwidth = '2';
+    row.invheight = '3';
+    if (data.headers.indexOf('missiletype') !== -1) row.missiletype = '0';
+    if (data.headers.indexOf('*comment') !== -1) {
+      row['*comment'] = 'Korlic Might base (Champion Axe + korlic_battle_axe)';
+    }
+
+    writeTsvSafe(fileName, data);
+    console.log('AncientWeapons: added Korlic base weapon ' + KORLIC_BASE_CODE + ' to ' + fileName);
+  });
+}
+
+// Adds the new unique on the custom battle-axe base. Stats mirror Uber Korlic:
+// Cold Enchant (cold damage + freeze), Blizzard proc, Cold Pierce, Bash
+// (crushing blow), plus high physical damage from his leap/bash hits.
+function addKorlicUniqueItem() {
+  ['global\\excel\\uniqueitems.txt', 'global\\excel\\base\\uniqueitems.txt'].forEach((fileName) => {
+    const data = readTsvSafe(fileName);
+    if (!data) return;
+
+    let row = data.rows.find((r) => r.index === KORLIC_UNIQUE_NAME);
+    if (!row) {
+      row = { index: KORLIC_UNIQUE_NAME };
+      data.rows.push(row);
+      console.log('AncientWeapons: created Korlic unique in ' + fileName);
+    } else {
+      console.log('AncientWeapons: updating Korlic unique in ' + fileName);
+    }
+
+    row.version = '100';
+    row.disabled = '0';
+    row.spawnable = '1';
+    row.rarity = '1';
+    row.nolimit = '0';
+    row.lvl = '56';
+    row['lvl req'] = '42';
+    row.code = KORLIC_BASE_CODE;
+
+    for (let propIndex = 1; propIndex <= 12; propIndex += 1) {
+      row['prop' + propIndex] = '';
+      row['par' + propIndex] = '';
+      row['min' + propIndex] = '';
+      row['max' + propIndex] = '';
+    }
+
+    row.prop1 = 'dmg%'; row.min1 = '180'; row.max1 = '250';
+    row.prop2 = 'extra-cold'; row.min2 = '15'; row.max2 = '25';
+    // dmg-cold: par = cold length in frames (100 = 4s), min/max = cold damage.
+    row.prop3 = 'dmg-cold'; row.par3 = '100'; row.min3 = '100'; row.max3 = '200';
+    // hit-skill format in this mod: min = chance %, max = skill level.
+    row.prop4 = 'hit-skill'; row.par4 = 'Blizzard'; row.min4 = '15'; row.max4 = '10';
+    row.prop5 = 'pierce-cold'; row.min5 = '15'; row.max5 = '20';
+    row.prop6 = 'crush'; row.min6 = '25'; row.max6 = '40';
+    row.prop7 = 'freeze'; row.min7 = '2'; row.max7 = '4';
+    row['*eol'] = '0';
+    if (data.headers.indexOf('*CNName') !== -1) {
+      row['*CNName'] = '科力克之力';
+    }
+
+    writeTsvSafe(fileName, data);
+    console.log('AncientWeapons: added Korlic unique to ' + fileName);
+  });
+}
+
+// Adds the name strings for the new base and unique to item-names.json.
+function addKorlicStrings() {
+  const fileName = 'local\\lng\\strings\\item-names.json';
+  let strings = null;
+  try {
+    strings = D2RMM.readJson(fileName);
+  } catch (error) {
+    console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + '), skipping Korlic strings.');
+    return;
+  }
+  if (!Array.isArray(strings)) {
+    console.warn('AncientWeapons: unexpected item-names.json format, skipping Korlic strings.');
+    return;
+  }
+
+  const template = strings.find((entry) => entry && typeof entry === 'object' && entry.Key) || {};
+  let nextId = 1;
+  strings.forEach((entry) => {
+    if (!entry) return;
+    const id = Number(entry.id);
+    if (Number.isFinite(id) && id >= nextId) nextId = id + 1;
+  });
+
+  const entries = [
+    { key: KORLIC_BASE_CODE, en: 'Champion Axe', zh: '冠军之斧' },
+    { key: KORLIC_UNIQUE_NAME, en: "Korlic's Might", zh: '科力克之力' },
+  ];
+
+  entries.forEach((entry) => {
+    const existing = strings.find((item) => item && item.Key === entry.key);
+    if (existing) {
+      existing.enUS = entry.en;
+      existing.zhCN = entry.zh;
+      existing.zhTW = entry.zh;
+      return;
+    }
+    const newEntry = {};
+    Object.keys(template).forEach((key) => {
+      if (key !== 'id' && key !== 'Key') newEntry[key] = '';
+    });
+    newEntry.id = nextId;
+    nextId += 1;
+    newEntry.Key = entry.key;
+    newEntry.enUS = entry.en;
+    newEntry.zhCN = entry.zh;
+    newEntry.zhTW = entry.zh;
+    strings.push(newEntry);
+  });
+
+  try {
+    D2RMM.writeJson(fileName, strings);
+  } catch (error) {
+    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
+    return;
+  }
+  console.log('AncientWeapons: added Korlic item names to ' + fileName);
+}
+
+// Maps the new base code to the custom Korlic held-weapon asset (held model +
+// inventory icon come from items.json by item code).
+function addKorlicHdMapping() {
+  const fileName = 'hd\\items\\items.json';
+  let items = null;
+  try {
+    items = D2RMM.readJson(fileName);
+  } catch (error) {
+    console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
+    return;
+  }
+  if (!Array.isArray(items)) {
+    console.warn('AncientWeapons: unexpected items.json format in ' + fileName + '.');
+    return;
+  }
+  const existing = items.find((entry) => entry && entry[KORLIC_BASE_CODE]);
+  if (existing) {
+    existing[KORLIC_BASE_CODE] = { asset: KORLIC_ITEM_ASSET };
+  } else {
+    items.push({ [KORLIC_BASE_CODE]: { asset: KORLIC_ITEM_ASSET } });
+  }
+  try {
+    D2RMM.writeJson(fileName, items);
+    console.log('AncientWeapons: mapped ' + KORLIC_BASE_CODE + ' to ' + KORLIC_ITEM_ASSET + ' in ' + fileName);
+  } catch (error) {
+    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
+  }
+}
+
+// Gives only the Korlic's Might unique the custom held-weapon asset.
+function addKorlicUniqueHdMapping() {
+  const fileName = 'hd\\items\\uniques.json';
+  let uniques = null;
+  try {
+    uniques = D2RMM.readJson(fileName);
+  } catch (error) {
+    console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
+    return;
+  }
+  if (!Array.isArray(uniques)) {
+    console.warn('AncientWeapons: unexpected uniques.json format in ' + fileName + '.');
+    return;
+  }
+  const uniqueKey = 'korlics_might';
+  const mapping = {
+    normal: KORLIC_ITEM_ASSET,
+    uber: KORLIC_ITEM_ASSET,
+    ultra: KORLIC_ITEM_ASSET,
+  };
+  const existing = uniques.find((entry) => entry && entry[uniqueKey]);
+  if (existing) {
+    existing[uniqueKey] = mapping;
+  } else {
+    uniques.push({ [uniqueKey]: mapping });
+  }
+  try {
+    D2RMM.writeJson(fileName, uniques);
+    console.log('AncientWeapons: mapped unique ' + KORLIC_UNIQUE_NAME + ' to ' + KORLIC_ITEM_ASSET + ' in ' + fileName);
+  } catch (error) {
+    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
+  }
+}
+
+// Copies the Korlic held-weapon asset and its inventory sprite into the output.
+function copyKorlicAssets() {
+  try {
+    D2RMM.copyFile('assets\\korlics_might.json', KORLIC_ITEM_JSON, true);
+    console.log('AncientWeapons: copied Korlic held-weapon asset to ' + KORLIC_ITEM_JSON);
+  } catch (error) {
+    console.warn('AncientWeapons: could not copy Korlic held-weapon asset (' + error.message + ').');
+  }
+  try {
+    D2RMM.copyFile('assets\\korlics_might.sprite', KORLIC_ICON_DST, true);
+    console.log('AncientWeapons: copied Korlic inventory icon to ' + KORLIC_ICON_DST);
+  } catch (error) {
+    console.warn('AncientWeapons: could not copy Korlic inventory icon (' + error.message + ').');
+  }
+}
+
+// Test recipe: any weapon + identify scroll -> Korlic's Might.
+function addKorlicCraftRecipe() {
+  const description = 'Korlic Might Craft (weap + isc)';
+  ['global\\excel\\cubemain.txt', 'global\\excel\\base\\cubemain.txt'].forEach((fileName) => {
+    const cubemain = readTsvSafe(fileName);
+    if (!cubemain) return;
+    if (cubemain.headers.indexOf('lvl') === -1) {
+      console.warn('AncientWeapons: unsupported cubemain layout in ' + fileName + ', skipping Korlic recipe.');
+      return;
+    }
+    const duplicate = cubemain.rows.some(
+      (row) => row.description === description && row['input 1'] === 'weap' && row['input 2'] === 'isc'
+    );
+    if (!duplicate) {
+      cubemain.rows.push({
+        description: description,
+        enabled: '1',
+        firstLadderSeason: '',
+        lastLadderSeason: '',
+        'min diff': '',
+        version: '100',
+        op: '',
+        param: '',
+        value: '',
+        class: '',
+        numinputs: '2',
+        'input 1': 'weap',
+        'input 2': 'isc',
+        'input 3': '',
+        'input 4': '',
+        'input 5': '',
+        'input 6': '',
+        'input 7': '',
+        output: '"' + KORLIC_BASE_CODE + ',uni"',
+        lvl: '99',
+        plvl: '',
+        ilvl: '',
+        '*eol': '0',
+      });
+    }
+
+    writeTsvSafe(fileName, cubemain);
+    console.log('AncientWeapons: added Korlic craft recipe to ' + fileName);
+  });
+}
 
 let madawcMissile = getMadawcMissileId();
 const customMadawcMissileId = upsertMadawcMissile();
@@ -517,3 +814,11 @@ addMadawcHdMapping();
 addMadawcUniqueHdMapping();
 copyMadawcAssets();
 addMadawcCraftRecipe();
+
+addKorlicBase();
+addKorlicUniqueItem();
+addKorlicStrings();
+addKorlicHdMapping();
+addKorlicUniqueHdMapping();
+copyKorlicAssets();
+addKorlicCraftRecipe();
