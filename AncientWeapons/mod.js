@@ -732,11 +732,11 @@ function addKorlicUniqueHdMapping() {
   }
 }
 
-// Copies the Korlic held-weapon asset and its inventory sprite into the
-// output. The held model is the vanilla Champion Axe (great_axe) — Uber
-// Korlic's own korlic_battle_axe model is a monster-only mesh that neither
-// renders for player characters nor survives the character-select preview
-// (it crashes the client there).
+// Copies the Korlic held-weapon asset, its inventory sprite, the korlic
+// battle-axe model LODs and its enemy weapon textures into the output. The
+// model and textures are hosted locally (hd/items/weapon/axe/korlics_might/)
+// so the game loads them like a regular player weapon instead of pulling the
+// enemy-only mesh/textures from the CASC.
 function copyKorlicAssets() {
   try {
     D2RMM.copyFile('assets\\korlics_might.json', KORLIC_ITEM_JSON, true);
@@ -750,6 +750,29 @@ function copyKorlicAssets() {
   } catch (error) {
     console.warn('AncientWeapons: could not copy Korlic inventory icon (' + error.message + ').');
   }
+  const modelDstDir = 'hd\\items\\weapon\\axe\\korlics_might\\';
+  for (let lod = 0; lod <= 4; lod += 1) {
+    try {
+      D2RMM.copyFile(
+        'assets\\korlic_battle_axe\\korlic_battle_axe_lod' + lod + '.model',
+        modelDstDir + 'korlic_battle_axe_lod' + lod + '.model',
+        true
+      );
+    } catch (error) {
+      console.warn('AncientWeapons: could not copy Korlic model lod' + lod + ' (' + error.message + ').');
+    }
+  }
+  [
+    ['ancientbarb3_weapon_ALB.texture', 'ancientbarb3_weapon_ALB.texture'],
+    ['ancientbarb3_weapon_NRM.texture', 'ancientbarb3_weapon_NRM.texture'],
+    ['ancientbarb3_weapon_ORM.texture', 'ancientbarb3_weapon_ORM.texture'],
+  ].forEach((pair) => {
+    try {
+      D2RMM.copyFile('assets\\korlic_textures\\' + pair[0], modelDstDir + pair[1], true);
+    } catch (error) {
+      console.warn('AncientWeapons: could not copy Korlic texture ' + pair[0] + ' (' + error.message + ').');
+    }
+  });
 }
 
 // Test recipe: any weapon + identify scroll -> Korlic's Might.
