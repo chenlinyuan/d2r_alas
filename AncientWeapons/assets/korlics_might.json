@@ -61,6 +61,9 @@
    },
    {
     "path": "data/hd/vfx/textures/distortion/T_FX_gaussian_distortion_02.texture"
+   },
+   {
+    "path": "data/hd/vfx/textures/default/tblade_0000000000000000.texture"
    }
   ],
   "physics": [],

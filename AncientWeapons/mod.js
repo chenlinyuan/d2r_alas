@@ -732,11 +732,12 @@ function addKorlicUniqueHdMapping() {
   }
 }
 
-// Copies the Korlic held-weapon asset, its inventory sprite and the coldenchant
-// "mist only" particle (a copy of vfx_coldenchant.particles whose fx_mesh_KorlicAxe
-// mesh emitter was repointed to a non-existent model, dropping the ice shell
-// while keeping the ice-mist emitters) into the output. The held model is the
-// vanilla halberd (the Woestave / Great Poleaxe model).
+// Copies the Korlic held-weapon asset, its inventory sprite, the coldenchant
+// "mist only" particle and its tiny mask texture into the output. The particle
+// keeps the fx_mesh_KorlicAxe mesh emitter (repointing it crashed the client)
+// but swaps the shell's mask texture for a tiny transparent tblade texture, so
+// the ice shell renders invisibly while the ice-mist emitters stay visible.
+// The held model is the vanilla halberd (the Woestave / Great Poleaxe model).
 function copyKorlicAssets() {
   try {
     D2RMM.copyFile('assets\\korlics_might.json', KORLIC_ITEM_JSON, true);
@@ -752,13 +753,23 @@ function copyKorlicAssets() {
   }
   try {
     D2RMM.copyFile(
-      'assets\\vfx_coldenchant_mist_only2.particles',
+      'assets\\vfx_coldenchant_mist_only.particles',
       'hd\\vfx\\particles\\items\\weapon\\korlics_might\\vfx_coldenchant_mist_only.particles',
       true
     );
     console.log('AncientWeapons: copied Korlic mist-only cold particle to output');
   } catch (error) {
     console.warn('AncientWeapons: could not copy Korlic mist-only particle (' + error.message + ').');
+  }
+  try {
+    D2RMM.copyFile(
+      'assets\\tblade_0000000000000000.texture',
+      'hd\\vfx\\textures\\default\\tblade_0000000000000000.texture',
+      true
+    );
+    console.log('AncientWeapons: copied Korlic mist mask texture to output');
+  } catch (error) {
+    console.warn('AncientWeapons: could not copy Korlic mist mask texture (' + error.message + ').');
   }
 }
 
