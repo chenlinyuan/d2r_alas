@@ -2,15 +2,12 @@
  "dependencies": {
   "particles": [
    {
-    "path": "data/hd/vfx/particles/overlays/monster/coldenchant/vfx_coldenchant.particles"
+    "path": "data/hd/vfx/particles/items/weapon/korlics_might/vfx_coldenchant_mist_only.particles"
    }
   ],
   "models": [
    {
-    "path": "data/hd/items/weapon/axe/korlics_might/korlic_battle_axe.model"
-   },
-   {
-    "path": "data/hd/vfx/meshes/fx_mesh_KorlicAxe.model"
+    "path": "data/hd/items/weapon/polearm/halberd/halberd.model"
    }
   ],
   "skeletons": [
@@ -21,28 +18,49 @@
   "animations": [],
   "textures": [
    {
-    "path": "data/hd/items/weapon/axe/korlics_might/ancientbarb3_weapon_ALB.texture"
+    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_ALB.texture"
    },
    {
-    "path": "data/hd/items/weapon/axe/korlics_might/ancientbarb3_weapon_NRM.texture"
+    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_NRM.texture"
    },
    {
-    "path": "data/hd/items/weapon/axe/korlics_might/ancientbarb3_weapon_ORM.texture"
+    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_ORM.texture"
    },
    {
-    "path": "data/hd/vfx/textures/mask/T_FX_KorlicAxe_fxMesh_mask.texture"
+    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_mask.texture"
+   },
+   {
+    "path": "data/hd/vfx/textures/noise/T_FX_cloud_noise_03.texture"
+   },
+   {
+    "path": "data/hd/vfx/textures/noise/T_FX_Noise_Dots_2.texture"
+   },
+   {
+    "path": "data/hd/vfx/textures/noise/T_FX_billowy_cloud_noise_gray.texture"
    },
    {
     "path": "data/hd/vfx/textures/gradient/T_FX_IceCrystal_gradient.texture"
    },
    {
-    "path": "data/hd/vfx/textures/distortion/T_FX_gaussian_distortion_02.texture"
+    "path": "data/hd/vfx/textures/noise/T_FX_Noise_Generic_Magic_Outlines_Tile_Mono.texture"
+   },
+   {
+    "path": "data/hd/vfx/textures/noise/T_FX_cloudnoise_generic.texture"
+   },
+   {
+    "path": "data/hd/vfx/textures/volumetric/T_FX_Vol_ChunkyCloud_Atlas_2x2.texture"
+   },
+   {
+    "path": "data/hd/vfx/Library/PopcornFXCore/Materials/DefaultTextures/Distort.texture"
+   },
+   {
+    "path": "data/hd/vfx/textures/mask/T_FX_smoke_mask_2x2_realistic.texture"
    },
    {
     "path": "data/hd/vfx/textures/default/White.texture"
    },
    {
-    "path": "data/hd/vfx/Library/PopcornFXCore/Materials/DefaultTextures/Distort.texture"
+    "path": "data/hd/vfx/textures/distortion/T_FX_gaussian_distortion_02.texture"
    }
   ],
   "physics": [],
@@ -274,7 +292,7 @@
     {
      "type": "ModelDefinitionComponent",
      "name": "entity_model_components_ModelDefinitionComponent",
-     "filename": "data/hd/items/weapon/axe/korlics_might/korlic_battle_axe.model",
+     "filename": "data/hd/items/weapon/polearm/halberd/halberd.model",
      "visibleLayers": 1,
      "lightMask": 19,
      "shadowMask": 3,
@@ -314,7 +332,7 @@
     {
      "type": "VfxDefinitionComponent",
      "name": "entity_vfx_VfxDefinition",
-     "filename": "data/hd/vfx/particles/overlays/monster/coldenchant/vfx_coldenchant.particles",
+     "filename": "data/hd/vfx/particles/items/weapon/korlics_might/vfx_coldenchant_mist_only.particles",
      "hardKillOnDestroy": true
     },
     {

@@ -317,7 +317,7 @@ function addMadawcStrings() {
   });
 
   const entries = [
-    { key: MADAWC_BASE_CODE, en: 'Flying Axe', zh: '椋炴枾' },
+    { key: MADAWC_BASE_CODE, en: 'Flying Axe', zh: '飞斧' },
     { key: MADAWC_UNIQUE_NAME, en: "Madawc's Fury", zh: '马道克之怒' },
   ];
 
@@ -732,11 +732,11 @@ function addKorlicUniqueHdMapping() {
   }
 }
 
-// Copies the Korlic held-weapon asset, its inventory sprite, the korlic
-// battle-axe model LODs and its enemy weapon textures into the output. The
-// model and textures are hosted locally (hd/items/weapon/axe/korlics_might/)
-// so the game loads them like a regular player weapon instead of pulling the
-// enemy-only mesh/textures from the CASC.
+// Copies the Korlic held-weapon asset, its inventory sprite and the coldenchant
+// "mist only" particle (a copy of vfx_coldenchant.particles whose fx_mesh_KorlicAxe
+// mesh emitter was repointed to a non-existent model, dropping the ice shell
+// while keeping the ice-mist emitters) into the output. The held model is the
+// vanilla halberd (the Woestave / Great Poleaxe model).
 function copyKorlicAssets() {
   try {
     D2RMM.copyFile('assets\\korlics_might.json', KORLIC_ITEM_JSON, true);
@@ -750,29 +750,16 @@ function copyKorlicAssets() {
   } catch (error) {
     console.warn('AncientWeapons: could not copy Korlic inventory icon (' + error.message + ').');
   }
-  const modelDstDir = 'hd\\items\\weapon\\axe\\korlics_might\\';
-  for (let lod = 0; lod <= 4; lod += 1) {
-    try {
-      D2RMM.copyFile(
-        'assets\\korlic_battle_axe\\korlic_battle_axe_lod' + lod + '.model',
-        modelDstDir + 'korlic_battle_axe_lod' + lod + '.model',
-        true
-      );
-    } catch (error) {
-      console.warn('AncientWeapons: could not copy Korlic model lod' + lod + ' (' + error.message + ').');
-    }
+  try {
+    D2RMM.copyFile(
+      'assets\\vfx_coldenchant_mist_only2.particles',
+      'hd\\vfx\\particles\\items\\weapon\\korlics_might\\vfx_coldenchant_mist_only.particles',
+      true
+    );
+    console.log('AncientWeapons: copied Korlic mist-only cold particle to output');
+  } catch (error) {
+    console.warn('AncientWeapons: could not copy Korlic mist-only particle (' + error.message + ').');
   }
-  [
-    ['ancientbarb3_weapon_ALB.texture', 'ancientbarb3_weapon_ALB.texture'],
-    ['ancientbarb3_weapon_NRM.texture', 'ancientbarb3_weapon_NRM.texture'],
-    ['ancientbarb3_weapon_ORM.texture', 'ancientbarb3_weapon_ORM.texture'],
-  ].forEach((pair) => {
-    try {
-      D2RMM.copyFile('assets\\korlic_textures\\' + pair[0], modelDstDir + pair[1], true);
-    } catch (error) {
-      console.warn('AncientWeapons: could not copy Korlic texture ' + pair[0] + ' (' + error.message + ').');
-    }
-  });
 }
 
 // Test recipe: any weapon + identify scroll -> Korlic's Might.
