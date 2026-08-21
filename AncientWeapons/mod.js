@@ -732,13 +732,12 @@ function addKorlicUniqueHdMapping() {
   }
 }
 
-// Copies the Korlic held-weapon asset, its inventory sprite, the frozen-korlic
-// particle and the korlic battle-axe mesh (for the particle's mesh emitter)
-// into the output. The solid korlic_battle_axe model does not render as a
-// player ModelDefinitionComponent (tried folder/texture/skeleton/LOD), but the
-// coldenchant particle's mesh emitter CAN render a korlic mesh, so the particle
-// is repointed from fx_mesh_KorlicAxe to korlic_battle_axe to show the axe as a
-// frozen mesh while keeping the ice-mist emitters.
+// Copies the Korlic held-weapon asset, its inventory sprite, the coldenchant
+// "mist only" particle and its tiny mask texture into the output. The particle
+// keeps the fx_mesh_KorlicAxe mesh emitter (repointing it crashed the client)
+// but swaps the shell's mask texture for a tiny transparent tblade texture, so
+// the ice shell renders invisibly while the ice-mist emitters stay visible.
+// The held model is the vanilla halberd (the Woestave / Great Poleaxe model).
 function copyKorlicAssets() {
   try {
     D2RMM.copyFile('assets\\korlics_might.json', KORLIC_ITEM_JSON, true);
@@ -754,24 +753,23 @@ function copyKorlicAssets() {
   }
   try {
     D2RMM.copyFile(
-      'assets\\vfx_korlic_frozen_axe.particles',
-      'hd\\vfx\\particles\\items\\weapon\\korlics_might\\vfx_korlic_frozen_axe.particles',
+      'assets\\vfx_coldenchant_mist_only.particles',
+      'hd\\vfx\\particles\\items\\weapon\\korlics_might\\vfx_coldenchant_mist_only.particles',
       true
     );
-    console.log('AncientWeapons: copied Korlic frozen-axe particle to output');
+    console.log('AncientWeapons: copied Korlic mist-only cold particle to output');
   } catch (error) {
-    console.warn('AncientWeapons: could not copy Korlic frozen-axe particle (' + error.message + ').');
+    console.warn('AncientWeapons: could not copy Korlic mist-only particle (' + error.message + ').');
   }
-  for (let lod = 0; lod <= 4; lod += 1) {
-    try {
-      D2RMM.copyFile(
-        'assets\\korlic_battle_axe\\korlic_battle_axe_lod' + lod + '.model',
-        'hd\\vfx\\meshes\\korlic_battle_axe_lod' + lod + '.model',
-        true
-      );
-    } catch (error) {
-      console.warn('AncientWeapons: could not copy Korlic mesh lod' + lod + ' (' + error.message + ').');
-    }
+  try {
+    D2RMM.copyFile(
+      'assets\\tblade_0000000000000000.texture',
+      'hd\\vfx\\textures\\default\\tblade_0000000000000000.texture',
+      true
+    );
+    console.log('AncientWeapons: copied Korlic mist mask texture to output');
+  } catch (error) {
+    console.warn('AncientWeapons: could not copy Korlic mist mask texture (' + error.message + ').');
   }
 }
 
