@@ -2,12 +2,12 @@
  "dependencies": {
   "particles": [
    {
-    "path": "data/hd/vfx/particles/items/weapon/korlics_might/vfx_coldenchant_mist_only.particles"
+    "path": "data/hd/vfx/particles/items/weapon/korlics_might/vfx_korlic_frozen_axe.particles"
    }
   ],
   "models": [
    {
-    "path": "data/hd/items/weapon/polearm/halberd/halberd.model"
+    "path": "data/hd/items/weapon/axe/_monsters/korlic_battle_axe/korlic_battle_axe.model"
    }
   ],
   "skeletons": [
@@ -18,16 +18,13 @@
   "animations": [],
   "textures": [
    {
-    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_ALB.texture"
+    "path": "data/hd/character/enemy/ancientbarb3/textures/ancientbarb3_weapon_ALB.texture"
    },
    {
-    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_NRM.texture"
+    "path": "data/hd/character/enemy/ancientbarb3/textures/ancientbarb3_weapon_NRM.texture"
    },
    {
-    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_ORM.texture"
-   },
-   {
-    "path": "data/hd/items/weapon/polearm/halberd/weapon_halberd_mask.texture"
+    "path": "data/hd/character/enemy/ancientbarb3/textures/ancientbarb3_weapon_ORM.texture"
    },
    {
     "path": "data/hd/vfx/textures/noise/T_FX_cloud_noise_03.texture"
@@ -54,6 +51,9 @@
     "path": "data/hd/vfx/Library/PopcornFXCore/Materials/DefaultTextures/Distort.texture"
    },
    {
+    "path": "data/hd/vfx/textures/mask/T_FX_KorlicAxe_fxMesh_mask.texture"
+   },
+   {
     "path": "data/hd/vfx/textures/mask/T_FX_smoke_mask_2x2_realistic.texture"
    },
    {
@@ -61,9 +61,6 @@
    },
    {
     "path": "data/hd/vfx/textures/distortion/T_FX_gaussian_distortion_02.texture"
-   },
-   {
-    "path": "data/hd/vfx/textures/default/tblade_0000000000000000.texture"
    }
   ],
   "physics": [],
@@ -103,7 +100,7 @@
     {
      "type": "SkeletonDefinitionComponent",
      "name": "entity_root_components_SkeletonDefinitionComponent",
-     "filename": "data/hd/items/dropped_items/skeleton/dropped_items.skeleton",
+     "filename": "data/hd/character/enemy/ancientbarb3/skeleton/ancientbarb3.skeleton",
      "enableWeaponAttachInertialization": false
     },
     {
@@ -295,7 +292,7 @@
     {
      "type": "ModelDefinitionComponent",
      "name": "entity_model_components_ModelDefinitionComponent",
-     "filename": "data/hd/items/weapon/polearm/halberd/halberd.model",
+     "filename": "data/hd/items/weapon/axe/_monsters/korlic_battle_axe/korlic_battle_axe.model",
      "visibleLayers": 1,
      "lightMask": 19,
      "shadowMask": 3,
@@ -335,7 +332,7 @@
     {
      "type": "VfxDefinitionComponent",
      "name": "entity_vfx_VfxDefinition",
-     "filename": "data/hd/vfx/particles/items/weapon/korlics_might/vfx_coldenchant_mist_only.particles",
+     "filename": "data/hd/vfx/particles/items/weapon/korlics_might/vfx_korlic_frozen_axe.particles",
      "hardKillOnDestroy": true
     },
     {
