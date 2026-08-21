@@ -1,0 +1,16 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "起始物品包 (Starter Pack)",
+  "description": "调整新建角色的默认物品。默认给每个职业的出生背包里放一个赫拉迪克方块、一本回城书和一本鉴定书。",
+  "author": "Codex",
+  "version": "1.1.0",
+  "config": [
+    {
+      "id": "giveCube",
+      "type": "checkbox",
+      "name": "赫拉迪克方块",
+      "description": "给新建角色发放赫拉迪克方块（赫拉迪克方块）。",
+      "defaultValue": true
+    }
+  ]
+}

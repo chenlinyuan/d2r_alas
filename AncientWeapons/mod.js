@@ -75,14 +75,28 @@ function getMadawcMissileId() {
 function upsertMadawcMissile() {
   const fileNames = ['global\\excel\\missiles.txt', 'global\\excel\\base\\missiles.txt'];
 
+  // Capture the COMPLETE source row first. The base variant of missiles.txt
+  // ships 'colossal throwing axe' as a stub (only *ID, all combat/visual
+  // columns empty), so cloning from it produces a broken madawc_fury row that
+  // makes the game fall back to a default (fire-bolt-looking) projectile.
+  let sourceRow = null;
   let targetId = null;
   fileNames.forEach((fileName) => {
     const data = readTsvSafe(fileName);
     if (!data) return;
     const existing = data.rows.find((row) => row.Missile === MADAWC_MISSILE_NAME);
     if (existing) targetId = existing['*ID'];
+    if (!sourceRow) {
+      const src = data.rows.find((row) => row.Missile === MADAWC_SOURCE_MISSILE_NAME);
+      if (src && String(src.CelFile || '').trim()) sourceRow = Object.assign({}, src);
+    }
   });
   if (targetId === null) {
+    // Reimagined-era approach: the custom missile gets maxId+1. Reimagined's
+    // missile table was dense 0..905 and its custom 'madawc_fury' at 906
+    // spawned and rendered fine, so a dense extension (maxId+1 = 733 in
+    // vanilla) works too. The vanilla "hole" at 725 was tried and did NOT
+    // spawn, so never reuse a hole.
     let maxId = 0;
     fileNames.forEach((fileName) => {
       const data = readTsvSafe(fileName);
@@ -94,31 +108,37 @@ function upsertMadawcMissile() {
     });
     targetId = String(maxId + 1);
   }
+  if (!sourceRow) {
+    // Fall back to the vanilla throwaxe row if the colossal axe source is
+    // unavailable anywhere.
+    fileNames.forEach((fileName) => {
+      const data = readTsvSafe(fileName);
+      if (!data || sourceRow) return;
+      const t = data.rows.find((row) => row.Missile === 'throwaxe');
+      if (t && String(t.CelFile || '').trim()) sourceRow = Object.assign({}, t);
+    });
+  }
+  if (!sourceRow) {
+    console.warn('AncientWeapons: could not find a complete source missile, skipping custom missile.');
+    return null;
+  }
 
   let wrote = false;
   fileNames.forEach((fileName) => {
     const data = readTsvSafe(fileName);
     if (!data) return;
 
-    const source = data.rows.find((row) => row.Missile === MADAWC_SOURCE_MISSILE_NAME);
-    if (!source) {
-      console.warn(
-        'AncientWeapons: ' + MADAWC_SOURCE_MISSILE_NAME + ' missile missing in ' + fileName + ', skipping.'
-      );
-      return;
-    }
-
     let row = data.rows.find((r) => r.Missile === MADAWC_MISSILE_NAME);
     if (!row) {
-      row = Object.assign({}, source);
+      row = Object.assign({}, sourceRow);
       row.Missile = MADAWC_MISSILE_NAME;
       data.rows.push(row);
       console.log('AncientWeapons: created missile ' + MADAWC_MISSILE_NAME + ' (id ' + targetId + ') in ' + fileName);
     } else {
       const keepId = row['*ID'];
       Object.keys(row).forEach((key) => delete row[key]);
-      Object.keys(source).forEach((key) => {
-        row[key] = source[key];
+      Object.keys(sourceRow).forEach((key) => {
+        row[key] = sourceRow[key];
       });
       row.Missile = MADAWC_MISSILE_NAME;
       row['*ID'] = keepId;
@@ -254,6 +274,9 @@ function addMadawcUniqueItem() {
       console.log('AncientWeapons: updating Madawc unique in ' + fileName);
     }
 
+    // Stable numeric unique id (vanilla max is 437) so saved items keep
+    // resolving to this unique even when other mods shift row order.
+    row['*ID'] = '20000';
     row.version = '100';
     row.disabled = '0';
     row.spawnable = '1';
@@ -280,8 +303,12 @@ function addMadawcUniqueItem() {
     row.prop7 = 'pierce-ltng'; row.min7 = '15'; row.max7 = '20';
     row.prop8 = 'pierce'; row.min8 = '100'; row.max8 = '100';
     row.prop9 = 'rep-quant'; row.par9 = '25';
-    row.prop10 = 'lightningskill'; row.min10 = '2'; row.max10 = '2';
-    row.prop11 = 'allskills'; row.min11 = '2'; row.max11 = '2';
+    // NOTE: `lightningskill` does not exist in vanilla properties.txt and
+    // makes the game reject the whole unique row (the crafted item degrades to
+    // a rare and shows the dummy name). Vanilla has no "+X Lightning Skills"
+    // property; keep allskills instead.
+    row.prop10 = 'allskills'; row.min10 = '2'; row.max10 = '2';
+    row.prop11 = '';
     row['*eol'] = '0';
     if (data.headers.indexOf('*CNName') !== -1) {
       row['*CNName'] = '马道克之怒';
@@ -309,16 +336,10 @@ function addMadawcStrings() {
 
   const template =
     strings.find((entry) => entry && typeof entry === 'object' && entry.Key) || {};
-  let nextId = 1;
-  strings.forEach((entry) => {
-    if (!entry) return;
-    const id = Number(entry.id);
-    if (Number.isFinite(id) && id >= nextId) nextId = id + 1;
-  });
 
   const entries = [
-    { key: MADAWC_BASE_CODE, en: 'Flying Axe', zh: '飞斧' },
-    { key: MADAWC_UNIQUE_NAME, en: "Madawc's Fury", zh: '马道克之怒' },
+    { key: MADAWC_BASE_CODE, en: 'Flying Axe', zh: '飞斧', id: 90000 },
+    { key: MADAWC_UNIQUE_NAME, en: "Madawc's Fury", zh: '马道克之怒', id: 90001 },
   ];
 
   entries.forEach((entry) => {
@@ -327,14 +348,14 @@ function addMadawcStrings() {
       existing.enUS = entry.en;
       existing.zhCN = entry.zh;
       existing.zhTW = entry.zh;
+      existing.id = entry.id;
       return;
     }
     const newEntry = {};
     Object.keys(template).forEach((key) => {
       if (key !== 'id' && key !== 'Key') newEntry[key] = '';
     });
-    newEntry.id = nextId;
-    nextId += 1;
+    newEntry.id = entry.id;
     newEntry.Key = entry.key;
     newEntry.enUS = entry.en;
     newEntry.zhCN = entry.zh;
@@ -576,6 +597,7 @@ function addKorlicUniqueItem() {
       console.log('AncientWeapons: updating Korlic unique in ' + fileName);
     }
 
+    row['*ID'] = '20001';
     row.version = '100';
     row.disabled = '0';
     row.spawnable = '1';
@@ -627,16 +649,10 @@ function addKorlicStrings() {
   }
 
   const template = strings.find((entry) => entry && typeof entry === 'object' && entry.Key) || {};
-  let nextId = 1;
-  strings.forEach((entry) => {
-    if (!entry) return;
-    const id = Number(entry.id);
-    if (Number.isFinite(id) && id >= nextId) nextId = id + 1;
-  });
 
   const entries = [
-    { key: KORLIC_BASE_CODE, en: 'Champion Axe', zh: '冠军之斧' },
-    { key: KORLIC_UNIQUE_NAME, en: "Korlic's Might", zh: '科力克之力' },
+    { key: KORLIC_BASE_CODE, en: 'Champion Axe', zh: '冠军之斧', id: 90002 },
+    { key: KORLIC_UNIQUE_NAME, en: "Korlic's Might", zh: '科力克之力', id: 90003 },
   ];
 
   entries.forEach((entry) => {
@@ -645,14 +661,14 @@ function addKorlicStrings() {
       existing.enUS = entry.en;
       existing.zhCN = entry.zh;
       existing.zhTW = entry.zh;
+      existing.id = entry.id;
       return;
     }
     const newEntry = {};
     Object.keys(template).forEach((key) => {
       if (key !== 'id' && key !== 'Key') newEntry[key] = '';
     });
-    newEntry.id = nextId;
-    nextId += 1;
+    newEntry.id = entry.id;
     newEntry.Key = entry.key;
     newEntry.enUS = entry.en;
     newEntry.zhCN = entry.zh;
@@ -819,19 +835,171 @@ function addKorlicCraftRecipe() {
   });
 }
 
-let madawcMissile = getMadawcMissileId();
-const customMadawcMissileId = upsertMadawcMissile();
-if (customMadawcMissileId && registerMadawcMissileHdAsset()) {
-  madawcMissile = customMadawcMissileId;
-} else {
-  console.warn(
-    'AncientWeapons: Madawc custom missile unavailable, using ' +
-      MADAWC_SOURCE_MISSILE_NAME +
-      ' (' +
-      madawcMissile +
-      ').'
+// Korlic's Might full-body morph, copied from Trang-Oul's Avatar: the
+// vanilla set grants its vampire form through the item `state` property
+// (sets.txt FCode='state' FParam='monsterset') pointing at a low-id disguise
+// state (states.txt transform+disguise+gfxtype=1+gfxclass=<monster *hcIdx>).
+// The disguise renderer only honors a few hardcoded transform states
+// (monsterset/delerium/wolf/bear/...); arbitrary states ignore the disguise
+// fields. Reimagined's own sets prove gfxclass is data-driven (monsterset1-4
+// disguise as megademon3/izual/wraith3/andariel), so we repurpose the
+// `monsterset` state (176) and point it at ancientbarb3 (Korlic, id 542).
+// NOTE: this also changes Trang-Oul's full-set vampire form to Korlic.
+const KORLIC_MORPH_STATE = 'monsterset'; // hardcoded item-granted disguise state (176)
+const KORLIC_MORPH_STATE_ID = '176';
+const KORLIC_MONSTER_ID = '542'; // ancientbarb3 (Korlic) *hcIdx
+
+function writeKorlicMorphState(fileNames) {
+  fileNames.forEach((fileName) => {
+    const data = readTsvSafe(fileName);
+    if (!data) return;
+    let row = data.rows.find((r) => r.state === KORLIC_MORPH_STATE);
+    if (!row) {
+      row = {};
+      data.headers.forEach((header) => {
+        row[header] = '';
+      });
+      data.rows.push(row);
+    }
+    row.state = KORLIC_MORPH_STATE;
+    row['*ID'] = KORLIC_MORPH_STATE_ID;
+    row.group = '3';
+    row.transform = '1';
+    row.disguise = '1';
+    row.gfxtype = '1';
+    row.gfxclass = KORLIC_MONSTER_ID;
+    row['*eol'] = '0';
+    writeTsvSafe(fileName, data);
+  });
+  console.log(
+    'AncientWeapons: set ' + KORLIC_MORPH_STATE + ' to disguise as Korlic (monster ' + KORLIC_MONSTER_ID + ')'
   );
 }
+
+// Binds the morph to Korlic's Might via the `state` item property (prop8,
+// free slot after the 7 combat props) - the exact property Trang-Oul's
+// full-set bonus uses.
+function attachKorlicMorphToUnique() {
+  ['global\\excel\\uniqueitems.txt', 'global\\excel\\base\\uniqueitems.txt'].forEach((fileName) => {
+    const data = readTsvSafe(fileName);
+    if (!data) return;
+    const row = data.rows.find((r) => r.index === KORLIC_UNIQUE_NAME);
+    if (!row) {
+      console.warn('AncientWeapons: "' + KORLIC_UNIQUE_NAME + '" not found in ' + fileName + ', skipping morph bind.');
+      return;
+    }
+    row.prop8 = 'state';
+    row.par8 = KORLIC_MORPH_STATE;
+    row.min8 = '1';
+    row.max8 = '1';
+    writeTsvSafe(fileName, data);
+  });
+  console.log('AncientWeapons: bound Korlic morph to ' + KORLIC_UNIQUE_NAME + ' (prop8 state ' + KORLIC_MORPH_STATE + ')');
+}
+
+// Test recipe: any weapon + r15 (Io) -> the same weapon with the `state`
+// property, so the morph can be verified on any weapon before/without the
+// unique.
+function addKorlicMorphTestRecipe() {
+  const description = 'Korlic Morph Test (weap + r15)';
+  ['global\\excel\\cubemain.txt', 'global\\excel\\base\\cubemain.txt'].forEach((fileName) => {
+    const cubemain = readTsvSafe(fileName);
+    if (!cubemain) return;
+    if (cubemain.headers.indexOf('lvl') === -1) {
+      console.warn('AncientWeapons: unsupported cubemain layout in ' + fileName + ', skipping Korlic morph recipe.');
+      return;
+    }
+    cubemain.rows = cubemain.rows.filter((row) => row.description !== description);
+    cubemain.rows.push({
+      description: description,
+      enabled: '1',
+      firstLadderSeason: '',
+      lastLadderSeason: '',
+      'min diff': '',
+      version: '100',
+      op: '',
+      param: '',
+      value: '',
+      class: '',
+      numinputs: '2',
+      'input 1': 'weap',
+      'input 2': 'r15',
+      'input 3': '',
+      'input 4': '',
+      'input 5': '',
+      'input 6': '',
+      'input 7': '',
+      output: 'useitem',
+      lvl: '',
+      plvl: '',
+      ilvl: '',
+      'mod 1': 'state',
+      'mod 1 chance': '100',
+      'mod 1 param': KORLIC_MORPH_STATE,
+      'mod 1 min': '1',
+      'mod 1 max': '1',
+      '*eol': '0',
+    });
+    writeTsvSafe(fileName, cubemain);
+    console.log('AncientWeapons: added Korlic morph test recipe to ' + fileName);
+  });
+}
+
+// The 91735 engine does not spawn custom missile ids (maxId+1 = 733 falls back
+// to a fire bolt; the 725 hole shows nothing), so Madawc's Fury reuses the
+// vanilla 'ancient throwing axe' missile (id 525, unused by players) and remaps
+// its HD asset to a custom clear Gnasher lightning-axe resource. This is the
+// configuration the user verified as "the lightning axe".
+function registerMadawcAxeHdAsset() {
+  try {
+    D2RMM.copyFile(
+      'assets\\vfx_madawc_axe.particles',
+      'hd\\vfx\\particles\\missiles\\madawc_axe\\vfx_madawc_axe.particles',
+      true
+    );
+    D2RMM.copyFile('assets\\madawc_axe.json', 'hd\\missiles\\madawc_axe.json', true);
+  } catch (error) {
+    console.warn('AncientWeapons: could not copy madawc axe missile assets (' + error.message + ').');
+    return;
+  }
+  const fileName = 'hd\\missiles\\missiles.json';
+  let missiles;
+  try {
+    missiles = D2RMM.readJson(fileName);
+  } catch (error) {
+    console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
+    return;
+  }
+  if (!missiles || typeof missiles !== 'object' || Array.isArray(missiles)) {
+    console.warn('AncientWeapons: unexpected missiles.json format in ' + fileName + '.');
+    return;
+  }
+  missiles['ancient throwing axe'] = 'madawc_axe';
+  missiles.ancient_throwing_axe = 'madawc_axe';
+  try {
+    D2RMM.writeJson(fileName, missiles);
+    console.log('AncientWeapons: mapped ancient throwing axe to madawc_axe in ' + fileName);
+  } catch (error) {
+    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
+  }
+}
+// Tune the shared 525 row so Madawc's Fury throws fast/long.
+function tuneMadawcSourceMissile() {
+  ['global\\excel\\missiles.txt', 'global\\excel\\base\\missiles.txt'].forEach((fileName) => {
+    const data = readTsvSafe(fileName);
+    if (!data) return;
+    const row = data.rows.find((r) => r.Missile === 'ancient throwing axe');
+    if (!row) return;
+    row.Vel = '32';
+    row.MaxVel = '32';
+    row.Range = '80';
+    writeTsvSafe(fileName, data);
+  });
+  console.log('AncientWeapons: tuned ancient throwing axe missile (fast/long)');
+}
+const madawcMissile = '525'; // 'ancient throwing axe'
+tuneMadawcSourceMissile();
+registerMadawcAxeHdAsset();
 addMadawcBase(madawcMissile);
 addMadawcUniqueItem();
 addMadawcStrings();
@@ -847,3 +1015,7 @@ addKorlicHdMapping();
 addKorlicUniqueHdMapping();
 copyKorlicAssets();
 addKorlicCraftRecipe();
+
+writeKorlicMorphState(['global\\excel\\states.txt', 'global\\excel\\base\\states.txt']);
+attachKorlicMorphToUnique();
+addKorlicMorphTestRecipe();

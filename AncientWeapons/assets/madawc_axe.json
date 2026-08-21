@@ -1,0 +1,131 @@
+{
+  "dependencies": {
+    "particles": [
+      {
+        "path": "data/hd/vfx/particles/missiles/madawc_axe/vfx_madawc_axe.particles"
+      }
+    ],
+    "models": [
+      {
+        "path": "data/hd/items/weapon/axe/the_gnasher/the_gnasher.model"
+      }
+    ],
+    "skeletons": [],
+    "animations": [],
+    "textures": [
+      {
+        "path": "data/hd/items/weapon/axe/the_gnasher/weapon_the_gnasher_ALB.texture"
+      },
+      {
+        "path": "data/hd/items/weapon/axe/the_gnasher/weapon_the_gnasher_NRM.texture"
+      },
+      {
+        "path": "data/hd/items/weapon/axe/the_gnasher/weapon_the_gnasher_ORM.texture"
+      },
+      {
+        "path": "data/hd/vfx/Library/PopcornFXCore/Materials/DefaultTextures/Distort.texture"
+      },
+      {
+        "path": "data/hd/vfx/Library/PopcornFXCore/Materials/DefaultTextures/White.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/default/Black.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/default/White.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/distortion/T_FX_gaussian_distortion_strong.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/energy/T_FX_LightningRibbon_Atlas_1x4_Mono.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/energy/T_FX_Lightning_Rune_Atlas_03.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/mask/FX_T_HOGM_Trail_01.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/geo/T_FX_Noise_Plasma_Ropey_02_RGB.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/gradient/T_FX_mephistoSpirit_Fresnel_Gradient.texture"
+      },
+      {
+        "path": "data/hd/vfx/textures/mask/T_FX_Circle_mask_03.texture"
+      }
+    ],
+    "physics": [],
+    "json": [],
+    "variantdata": [],
+    "objecteffects": [],
+    "other": []
+  },
+  "type": "UnitDefinition",
+  "name": "madawc_axe",
+  "entities": [
+    {
+      "type": "Entity",
+      "name": "entity_root",
+      "id": 715073600,
+      "components": [
+        {
+          "type": "UnitRootComponent",
+          "name": "component_root",
+          "state_machine_filename": "",
+          "doNotInheritRotation": false,
+          "rotationOverride": {
+            "x": 0.0,
+            "y": 0.3826834,
+            "z": 0.0,
+            "w": 0.9238795
+          },
+          "doNotUseHDHeight": false,
+          "hideAllMeshWhenInOpenedMode": false,
+          "onCreateEventName": "",
+          "animations": []
+        }
+      ]
+    },
+    {
+      "type": "Entity",
+      "name": "entity_vfx1",
+      "id": 1247517300,
+      "components": [
+        {
+          "type": "VfxDefinitionComponent",
+          "name": "component_vfx1",
+          "filename": "data/hd/vfx/particles/missiles/madawc_axe/vfx_madawc_axe.particles",
+          "hardKillOnDestroy": true
+        },
+        {
+          "type": "TransformDefinitionComponent",
+          "name": "component_transform1",
+          "position": {
+            "x": 0.0,
+            "y": 5.0,
+            "z": 0.0
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "inheritOnlyPosition": false
+        },
+        {
+          "type": "TrackReleasePointDefinitionComponent",
+          "name": "entity_vfx1_TrackReleasePointDefinition",
+          "transitionTime": 0.5
+        }
+      ]
+    }
+  ]
+}

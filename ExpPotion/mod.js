@@ -83,17 +83,94 @@ function updatePotionDescription(levels) {
   }
   const entry = strings.find((s) => s && s.Key === 'PotionExperienceDesc');
   if (!entry) {
-    console.warn('ExpPotion: PotionExperienceDesc not found in item-names.json, skipping description.');
-    return;
+    const template = strings.find((s) => s && typeof s === 'object' && s.Key) || {};
+    const newEntry = {};
+    Object.keys(template).forEach((key) => {
+      if (key !== 'id' && key !== 'Key') newEntry[key] = '';
+    });
+    // Fixed high id: the game merges all string files into one id space, so
+    // max+1 ids can collide with vanilla ui.json / item-modifiers.json entries.
+    newEntry.id = 90011;
+    newEntry.Key = 'PotionExperienceDesc';
+    strings.push(newEntry);
+    console.log('ExpPotion: created PotionExperienceDesc string entry');
   }
-  entry.enUS =
+  const desc = strings.find((s) => s && s.Key === 'PotionExperienceDesc');
+  desc.id = 90011;
+  desc.enUS =
     'ÿc4Grants experience for %d level(s)\n(level-up applies on your next XP gain)';
-  entry.zhCN =
+  desc.zhCN =
     'ÿc4喝下后获得升 %d 级所需的经验\n（升级在下次获得经验时结算）';
-  entry.zhTW =
+  desc.zhTW =
     'ÿc4喝下後獲得升 %d 級所需的經驗\n（升級在下次獲得經驗時結算）';
   try {
     D2RMM.writeJson(fileName, strings);
+  } catch (error) {
+    console.warn('ExpPotion: could not write ' + fileName + ' (' + error.message + ').');
+  }
+}
+
+// Registers the new xpp item in the HD asset map so the inventory icon and
+// ground model render (reuses the vanilla Full Rejuvenation Potion assets).
+function registerXppHdIcon() {
+  const fileName = 'hd\\items\\items.json';
+  let items;
+  try {
+    items = D2RMM.readJson(fileName);
+  } catch (error) {
+    console.warn('ExpPotion: could not read ' + fileName + ' (' + error.message + '), skipping HD icon.');
+    return;
+  }
+  if (!Array.isArray(items)) {
+    console.warn('ExpPotion: unexpected items.json format, skipping HD icon.');
+    return;
+  }
+  const existing = items.find((entry) => entry && entry.xpp);
+  if (existing) {
+    existing.xpp = { asset: 'potion/full_rejuv_potion' };
+  } else {
+    items.push({ xpp: { asset: 'potion/full_rejuv_potion' } });
+  }
+  try {
+    D2RMM.writeJson(fileName, items);
+    console.log('ExpPotion: mapped xpp to potion/full_rejuv_potion in ' + fileName);
+  } catch (error) {
+    console.warn('ExpPotion: could not write ' + fileName + ' (' + error.message + ').');
+  }
+}
+
+// Adds the xpp display name (the misc.txt `name` string key) to item-names.
+function addXppNameStrings() {
+  const fileName = 'local\\lng\\strings\\item-names.json';
+  let strings;
+  try {
+    strings = D2RMM.readJson(fileName);
+  } catch (error) {
+    console.warn('ExpPotion: could not read ' + fileName + ' (' + error.message + '), skipping name.');
+    return;
+  }
+  if (!Array.isArray(strings)) {
+    console.warn('ExpPotion: unexpected item-names.json format, skipping name.');
+    return;
+  }
+  let entry = strings.find((s) => s && s.Key === 'xpp');
+  if (!entry) {
+    const template = strings.find((s) => s && typeof s === 'object' && s.Key) || {};
+    entry = {};
+    Object.keys(template).forEach((key) => {
+      if (key !== 'id' && key !== 'Key') entry[key] = '';
+    });
+    entry.id = 90010;
+    entry.Key = 'xpp';
+    strings.push(entry);
+  }
+  entry.id = 90010;
+  entry.enUS = 'Experience Potion';
+  entry.zhCN = '经验药水';
+  entry.zhTW = '經驗藥水';
+  try {
+    D2RMM.writeJson(fileName, strings);
+    console.log('ExpPotion: added xpp name strings to ' + fileName);
   } catch (error) {
     console.warn('ExpPotion: could not write ' + fileName + ' (' + error.message + ').');
   }
@@ -109,17 +186,37 @@ function setupExpPotion() {
   ['global\\excel\\misc.txt', 'global\\excel\\base\\misc.txt'].forEach((fileName) => {
     const data = readTsvSafe(fileName);
     if (!data) return;
-    const row = data.rows.find((r) => r.code === 'xpp');
+    let row = data.rows.find((r) => r.code === 'xpp');
     if (!row) {
-      console.warn('ExpPotion: Experience Potion (xpp) not found in ' + fileName + ', skipping.');
-      return;
+      // Vanilla has no xpp (Reimagined-only). Clone the Full Rejuvenation
+      // Potion (rvl) so the item uses real vanilla potion assets, then the
+      // exp-potion overrides below apply on top.
+      const template = data.rows.find((r) => r.code === 'rvl');
+      if (!template) {
+        console.warn('ExpPotion: neither xpp nor rvl found in ' + fileName + ', skipping.');
+        return;
+      }
+      row = {};
+      data.headers.forEach((header) => {
+        row[header] = template[header] || '';
+      });
+      row.name = 'xpp';
+      row.namestr = 'xpp';
+      row.code = 'xpp';
+      data.rows.push(row);
+      console.log('ExpPotion: created xpp row (cloned rvl) in ' + fileName);
     }
     row.cost = '1';
+    // Shop-stocked items need spawnable=1 (the rvl template we clone from is
+    // spawnable=0, which keeps the item out of every generator incl. shops).
+    row.spawnable = '1';
+    row.rarity = '1';
     row.stat1 = 'experience';
     row.calc1 = calc;
     row.pSpell = '4';
     row.spelldesc = '2';
     row.spelldesccalc = String(levels);
+    row.spelldescstr = 'PotionExperienceDesc';
     row.state = '';
     row.len = '';
     row.AkaraMin = '1';
@@ -129,6 +226,8 @@ function setupExpPotion() {
     row.level = '0';
     writeTsvSafe(fileName, data);
   });
+  registerXppHdIcon();
+  addXppNameStrings();
   updatePotionDescription(levels);
   console.log('ExpPotion: xpp now costs 1 gold and grants ' + levels + ' level(s) per drink');
 }
