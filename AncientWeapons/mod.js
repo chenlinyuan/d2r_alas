@@ -1,8 +1,8 @@
 // Ancient Weapons - custom Ancients-themed unique weapons for D2RMM + Reimagined.
 // - Madawc's Fury: elite throwing axe on base mwa, reuses Uber Madawc's held
 //   weapon asset (The Gnasher model + lightning-enchant object VFX).
-// - Korlic's Might: elite 2H battle axe on base kwa, reuses Uber Korlic's held
-//   weapon asset (korlic_battle_axe model + cold-enchant object VFX).
+// - Korlic's Might: elite 2H battle axe on base kwa, cold-enchant mist on the
+//   vanilla halberd (Woestave) held model.
 //
 // Test craft recipes:
 //   any weapon + Town Portal scroll (tsc) -> Madawc's Fury
@@ -22,175 +22,81 @@ const MADAWC_ITEM_ASSET = 'axe/madawc_fury';
 const MADAWC_ITEM_JSON = 'hd\\items\\weapon\\axe\\madawc_fury.json';
 const MADAWC_ICON_DST = 'hd\\global\\ui\\items\\weapon\\axe\\madawc_fury.sprite';
 
-// Korlic's Might: an elite 2H battle axe unique that reuses Uber Korlic's
-// actual held weapon asset (the korlic_battle_axe model + cold-enchant object
-// VFX). The cold/ice theme mirrors Uber Korlic's kit (Cold Enchant, Blizzard,
-// Korlic's Cold Pierce, Korlic's Bash).
+// Korlic's Might: an elite 2H battle axe unique themed after Uber Korlic (Cold
+// Enchant, Blizzard, Korlic's Cold Pierce, Korlic's Bash). The korlic_battle_axe
+// monster model cannot be held by players, so the held model is the vanilla
+// halberd (Woestave); the cold mist is a coldenchant overlay ObjectEffect.
 const KORLIC_BASE_CODE = 'kwa';
 const KORLIC_UNIQUE_NAME = "Korlic's Might";
 const KORLIC_ITEM_ASSET = 'axe/korlics_might';
 const KORLIC_ITEM_JSON = 'hd\\items\\weapon\\axe\\korlics_might.json';
 const KORLIC_ICON_DST = 'hd\\global\\ui\\items\\weapon\\axe\\korlics_might.sprite';
 
+// Talic's Flame: an elite 1H sword themed after Uber Talic (ancientbarb1). The
+// talic_sword.model is monster-only (no player skeleton), so the held weapon
+// reuses the vanilla War Sword player model + Talic's flame blade-shell VFX.
+const TALIC_BASE_CODE = 'tsf';
+const TALIC_UNIQUE_NAME = "Talic's Flame";
+const TALIC_ITEM_ASSET = 'sword/talics_flame';
+const TALIC_ITEM_JSON = 'hd\\items\\weapon\\sword\\talics_flame.json';
+const TALIC_ICON_DST = 'hd\\global\\ui\\items\\weapon\\sword\\talics_flame.sprite';
+
+// ---- I/O cache: read each file once, write each file once at the end ----
+// Many functions below touch the same tables (missiles/weapons/uniqueitems/
+// strings/...). Caching reads and deferring writes collapses the repeated
+// read+write cycles per file into one, which speeds up the D2RMM install.
+const _ioCache = new Map();   // fileName -> { kind: 'tsv'|'json', data }
+const _ioPending = new Map(); // fileName -> { kind: 'tsv'|'json', data }
+
 function readTsvSafe(fileName) {
+  if (_ioCache.has(fileName)) return _ioCache.get(fileName).data;
+  let data = null;
   try {
-    return D2RMM.readTsv(fileName, { removeCarriageReturns: true });
+    data = D2RMM.readTsv(fileName, { removeCarriageReturns: true });
   } catch (error) {
     console.debug(
       'AncientWeapons: could not read ' + fileName + ' (' + error.message + '), skipping.'
     );
-    return null;
   }
+  _ioCache.set(fileName, { kind: 'tsv', data });
+  return data;
 }
 
 function writeTsvSafe(fileName, data) {
+  _ioCache.set(fileName, { kind: 'tsv', data });
+  _ioPending.set(fileName, { kind: 'tsv', data });
+}
+
+function readJsonSafe(fileName) {
+  if (_ioCache.has(fileName)) return _ioCache.get(fileName).data;
+  let data = null;
   try {
-    D2RMM.writeTsv(fileName, data, { addCarriageReturns: true });
-  } catch (error) {
-    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
-  }
-}
-
-// Add (or refresh) a custom missile row that keeps the throwaxe combat
-// behaviour but renders the golden Blessed Hammer sprite. Returns the
-// missile *ID to reference from weapons.txt, or null when the table is
-function getMadawcMissileId() {
-  const fileNames = ['global\\excel\\missiles.txt', 'global\\excel\\base\\missiles.txt'];
-  let resolved = null;
-  fileNames.forEach((fileName) => {
-    if (resolved !== null) return;
-    const data = readTsvSafe(fileName);
-    if (!data) return;
-    const row = data.rows.find((r) => r.Missile === MADAWC_SOURCE_MISSILE_NAME);
-    if (row) resolved = row['*ID'];
-  });
-  return resolved || MADAWC_FALLBACK_MISSILE;
-}
-
-// Creates a dedicated "madawc_fury" missile row cloned from the vanilla
-// "colossal throwing axe" (Madawc's own thrown axe), but with a faster
-// velocity and a much longer range so the thrown axe actually flies far.
-// The HD missile mapping points the new row back at the colossal axe asset,
-// so the thrown visual stays identical to Madawc's.
-function upsertMadawcMissile() {
-  const fileNames = ['global\\excel\\missiles.txt', 'global\\excel\\base\\missiles.txt'];
-
-  // Capture the COMPLETE source row first. The base variant of missiles.txt
-  // ships 'colossal throwing axe' as a stub (only *ID, all combat/visual
-  // columns empty), so cloning from it produces a broken madawc_fury row that
-  // makes the game fall back to a default (fire-bolt-looking) projectile.
-  let sourceRow = null;
-  let targetId = null;
-  fileNames.forEach((fileName) => {
-    const data = readTsvSafe(fileName);
-    if (!data) return;
-    const existing = data.rows.find((row) => row.Missile === MADAWC_MISSILE_NAME);
-    if (existing) targetId = existing['*ID'];
-    if (!sourceRow) {
-      const src = data.rows.find((row) => row.Missile === MADAWC_SOURCE_MISSILE_NAME);
-      if (src && String(src.CelFile || '').trim()) sourceRow = Object.assign({}, src);
-    }
-  });
-  if (targetId === null) {
-    // Reimagined-era approach: the custom missile gets maxId+1. Reimagined's
-    // missile table was dense 0..905 and its custom 'madawc_fury' at 906
-    // spawned and rendered fine, so a dense extension (maxId+1 = 733 in
-    // vanilla) works too. The vanilla "hole" at 725 was tried and did NOT
-    // spawn, so never reuse a hole.
-    let maxId = 0;
-    fileNames.forEach((fileName) => {
-      const data = readTsvSafe(fileName);
-      if (!data) return;
-      data.rows.forEach((row) => {
-        const id = parseInt(row['*ID'], 10);
-        if (!isNaN(id) && id > maxId) maxId = id;
-      });
-    });
-    targetId = String(maxId + 1);
-  }
-  if (!sourceRow) {
-    // Fall back to the vanilla throwaxe row if the colossal axe source is
-    // unavailable anywhere.
-    fileNames.forEach((fileName) => {
-      const data = readTsvSafe(fileName);
-      if (!data || sourceRow) return;
-      const t = data.rows.find((row) => row.Missile === 'throwaxe');
-      if (t && String(t.CelFile || '').trim()) sourceRow = Object.assign({}, t);
-    });
-  }
-  if (!sourceRow) {
-    console.warn('AncientWeapons: could not find a complete source missile, skipping custom missile.');
-    return null;
-  }
-
-  let wrote = false;
-  fileNames.forEach((fileName) => {
-    const data = readTsvSafe(fileName);
-    if (!data) return;
-
-    let row = data.rows.find((r) => r.Missile === MADAWC_MISSILE_NAME);
-    if (!row) {
-      row = Object.assign({}, sourceRow);
-      row.Missile = MADAWC_MISSILE_NAME;
-      data.rows.push(row);
-      console.log('AncientWeapons: created missile ' + MADAWC_MISSILE_NAME + ' (id ' + targetId + ') in ' + fileName);
-    } else {
-      const keepId = row['*ID'];
-      Object.keys(row).forEach((key) => delete row[key]);
-      Object.keys(sourceRow).forEach((key) => {
-        row[key] = sourceRow[key];
-      });
-      row.Missile = MADAWC_MISSILE_NAME;
-      row['*ID'] = keepId;
-      console.log('AncientWeapons: updated missile ' + MADAWC_MISSILE_NAME + ' in ' + fileName);
-    }
-
-    row['*ID'] = targetId;
-    row.Vel = '32';
-    row.MaxVel = '32';
-    row.Range = '80';
-    // Madawc's vanilla thrown axe spawns charged bolts on every hit (his
-    // boss gimmick). For the player-held Madawc's Fury this floods the screen
-    // with sub-missiles at high Double Throw levels and crashes the client,
-    // so strip both hit sub-missile fields (client and server).
-    row.HitSubMissile1 = '';
-    row.CltHitSubMissile1 = '';
-
-    writeTsvSafe(fileName, data);
-    wrote = true;
-  });
-
-  return wrote ? targetId : null;
-}
-
-// Register the custom Madawc missile in the HD asset map so D2R renders it
-// with the vanilla colossal-throwing-axe model/particles.
-function registerMadawcMissileHdAsset() {
-  const fileName = 'hd\\missiles\\missiles.json';
-  let missiles = null;
-  try {
-    missiles = D2RMM.readJson(fileName);
+    data = D2RMM.readJson(fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
-    return false;
   }
-  if (!missiles || typeof missiles !== 'object' || Array.isArray(missiles)) {
-    console.warn('AncientWeapons: unexpected missiles.json format in ' + fileName + '.');
-    return false;
-  }
+  _ioCache.set(fileName, { kind: 'json', data });
+  return data;
+}
 
-  if (!Object.prototype.hasOwnProperty.call(missiles, MADAWC_MISSILE_NAME)) {
-    missiles[MADAWC_MISSILE_NAME] = MADAWC_HD_ASSET_NAME;
-  }
+function writeJsonSafe(fileName, data) {
+  _ioCache.set(fileName, { kind: 'json', data });
+  _ioPending.set(fileName, { kind: 'json', data });
+}
 
-  try {
-    D2RMM.writeJson(fileName, missiles);
-    console.log('AncientWeapons: mapped ' + MADAWC_MISSILE_NAME + ' to ' + MADAWC_HD_ASSET_NAME + ' in ' + fileName);
-    return true;
-  } catch (error) {
-    console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
-    return false;
-  }
+function flushIo() {
+  _ioPending.forEach((entry, fileName) => {
+    try {
+      if (entry.kind === 'tsv') {
+        D2RMM.writeTsv(fileName, entry.data, { addCarriageReturns: true });
+      } else {
+        D2RMM.writeJson(fileName, entry.data);
+      }
+    } catch (error) {
+      console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
+    }
+  });
+  _ioPending.clear();
 }
 
 // Adds the custom Flying Axe base used by the new unique. It is a clone of
@@ -242,8 +148,9 @@ function addMadawcBase(missileId) {
     row.flippyfile = flyingAxe.flippyfile || 'flptax';
     row.invfile = flyingAxe.invfile || 'invtax';
     row.uniqueinvfile = flyingAxe.uniqueinvfile || '';
-    // Madawc's Fury occupies a large 2x3 inventory footprint (matching its
-    // oversized held weapon), instead of the vanilla Flying Axe 1x2 slot.
+    // Madawc's Fury occupies a large 2x3 inventory footprint (matching the
+    // elite Winged Axe unique Lacerator and its oversized held weapon),
+    // instead of the vanilla Flying Axe 1x2 slot.
     row.invwidth = '2';
     row.invheight = '3';
     row.wclass = flyingAxe.wclass || '1hs';
@@ -296,19 +203,19 @@ function addMadawcUniqueItem() {
     row.prop1 = 'dmg%'; row.min1 = '150'; row.max1 = '200';
     row.prop2 = 'dmg-ltng'; row.min2 = '1'; row.max2 = '400';
     row.prop3 = 'extra-ltng'; row.min3 = '15'; row.max3 = '20';
-    // hit-skill format in this mod: min = chance %, max = skill level.
-    row.prop4 = 'hit-skill'; row.par4 = 'Nova'; row.min4 = '15'; row.max4 = '10';
+    // No Nova proc: with 100% pierce it would trigger on every pierced hit
+    // (too strong and noisy), and vanilla Madawc's axes do not cast Nova.
     row.prop5 = 'swing3'; row.min5 = '50'; row.max5 = '50';
     row.prop6 = 'openwounds'; row.min6 = '40'; row.max6 = '40';
     row.prop7 = 'pierce-ltng'; row.min7 = '15'; row.max7 = '20';
     row.prop8 = 'pierce'; row.min8 = '100'; row.max8 = '100';
     row.prop9 = 'rep-quant'; row.par9 = '25';
-    // NOTE: `lightningskill` does not exist in vanilla properties.txt and
-    // makes the game reject the whole unique row (the crafted item degrades to
-    // a rare and shows the dummy name). Vanilla has no "+X Lightning Skills"
-    // property; keep allskills instead.
-    row.prop10 = 'allskills'; row.min10 = '2'; row.max10 = '2';
-    row.prop11 = '';
+    // No "+X Throwing Skills" property exists in vanilla/Reimagined; skilltab
+    // 12 is the Barbarian Combat Skills tab (contains Throw / Double Throw),
+    // replacing the invalid `lightningskill` and the wrong Amazon tab.
+    row.prop10 = 'skilltab'; row.par10 = '12'; row.min10 = '2'; row.max10 = '2';
+    row.prop11 = 'allskills'; row.min11 = '1'; row.max11 = '1';
+    row.prop12 = 'noheal'; row.min12 = '1'; row.max12 = '1';
     row['*eol'] = '0';
     if (data.headers.indexOf('*CNName') !== -1) {
       row['*CNName'] = '马道克之怒';
@@ -324,7 +231,7 @@ function addMadawcStrings() {
   const fileName = 'local\\lng\\strings\\item-names.json';
   let strings = null;
   try {
-    strings = D2RMM.readJson(fileName);
+    strings = readJsonSafe(fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + '), skipping Madawc strings.');
     return;
@@ -364,7 +271,7 @@ function addMadawcStrings() {
   });
 
   try {
-    D2RMM.writeJson(fileName, strings);
+    writeJsonSafe(fileName, strings);
   } catch (error) {
     console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
     return;
@@ -382,7 +289,7 @@ function addMadawcHdMapping() {
   const fileName = 'hd\\items\\items.json';
   let items = null;
   try {
-    items = D2RMM.readJson(fileName);
+    items = readJsonSafe(fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
     return;
@@ -400,7 +307,7 @@ function addMadawcHdMapping() {
   }
 
   try {
-    D2RMM.writeJson(fileName, items);
+    writeJsonSafe(fileName, items);
     console.log('AncientWeapons: mapped ' + MADAWC_BASE_CODE + ' to ' + MADAWC_ITEM_ASSET + ' in ' + fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
@@ -414,7 +321,7 @@ function addMadawcUniqueHdMapping() {
   const fileName = 'hd\\items\\uniques.json';
   let uniques = null;
   try {
-    uniques = D2RMM.readJson(fileName);
+    uniques = readJsonSafe(fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
     return;
@@ -438,7 +345,7 @@ function addMadawcUniqueHdMapping() {
   }
 
   try {
-    D2RMM.writeJson(fileName, uniques);
+    writeJsonSafe(fileName, uniques);
     console.log('AncientWeapons: mapped unique ' + MADAWC_UNIQUE_NAME + ' to ' + MADAWC_ITEM_ASSET + ' in ' + fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
@@ -527,8 +434,9 @@ function addMadawcCraftRecipe() {
 }
 
 // Adds the custom 2H battle-axe base (kwa) used by Korlic's Might. It is a
-// clone of the elite Champion Axe (7ga): 2H 59-94, speed -10, wclass stf, but
-// with a lower level/req so the unique is testable in early game.
+// clone of the elite Champion Axe (7ga): speed -10, wclass stf, with a lower
+// level/req so the unique is testable early. The 2H damage is raised to
+// Bonehew's Ogre Axe level (28-145) so the 300-350% ED reaches ~600+ damage.
 function addKorlicBase() {
   ['global\\excel\\weapons.txt', 'global\\excel\\base\\weapons.txt'].forEach((fileName) => {
     const data = readTsvSafe(fileName);
@@ -559,8 +467,11 @@ function addKorlicBase() {
     row.ultracode = KORLIC_BASE_CODE;
     row.mindam = championAxe.mindam || '';
     row.maxdam = championAxe.maxdam || '';
-    row['2handmindam'] = championAxe['2handmindam'] || '59';
-    row['2handmaxdam'] = championAxe['2handmaxdam'] || '94';
+    // Bonehew's Ogre Axe base is 28-145 2H damage (it is type=pole, so we keep
+    // Korlic's Might an axe but adopt the damage range; the minimum is doubled
+    // to 56 so the low end is not so weak).
+    row['2handmindam'] = '56';
+    row['2handmaxdam'] = '145';
     row.speed = championAxe.speed || '-10';
     row.reqstr = championAxe.reqstr || '';
     row.reqdex = championAxe.reqdex || '';
@@ -569,10 +480,10 @@ function addKorlicBase() {
     row.wclass = championAxe.wclass || 'stf';
     row['2handedwclass'] = championAxe['2handedwclass'] || 'stf';
     row.invwidth = '2';
-    row.invheight = '3';
+    row.invheight = '4';
     if (data.headers.indexOf('missiletype') !== -1) row.missiletype = '0';
     if (data.headers.indexOf('*comment') !== -1) {
-      row['*comment'] = 'Korlic Might base (Champion Axe + korlic_battle_axe)';
+      row['*comment'] = 'Korlic Might base (Champion Axe frame, Ogre Axe 28-145 damage, Woestave halberd held model)';
     }
 
     writeTsvSafe(fileName, data);
@@ -614,7 +525,7 @@ function addKorlicUniqueItem() {
       row['max' + propIndex] = '';
     }
 
-    row.prop1 = 'dmg%'; row.min1 = '180'; row.max1 = '250';
+    row.prop1 = 'dmg%'; row.min1 = '300'; row.max1 = '350';
     row.prop2 = 'extra-cold'; row.min2 = '15'; row.max2 = '25';
     // dmg-cold: par = cold length in frames (100 = 4s), min/max = cold damage.
     row.prop3 = 'dmg-cold'; row.par3 = '100'; row.min3 = '100'; row.max3 = '200';
@@ -622,7 +533,11 @@ function addKorlicUniqueItem() {
     row.prop4 = 'hit-skill'; row.par4 = 'Blizzard'; row.min4 = '15'; row.max4 = '10';
     row.prop5 = 'pierce-cold'; row.min5 = '15'; row.max5 = '20';
     row.prop6 = 'crush'; row.min6 = '25'; row.max6 = '40';
-    row.prop7 = 'freeze'; row.min7 = '2'; row.max7 = '4';
+    row.prop7 = 'freeze'; row.min7 = '4'; row.max7 = '4';
+    row.prop9 = 'allskills'; row.min9 = '3'; row.max9 = '3';
+    // Cannot Be Frozen (nofreeze) - NOT half-freeze, which is only "Half Freeze
+    // Duration". Fitting for a cold-themed fighter.
+    row.prop10 = 'nofreeze'; row.min10 = '1'; row.max10 = '1';
     row['*eol'] = '0';
     if (data.headers.indexOf('*CNName') !== -1) {
       row['*CNName'] = '科力克之力';
@@ -638,7 +553,7 @@ function addKorlicStrings() {
   const fileName = 'local\\lng\\strings\\item-names.json';
   let strings = null;
   try {
-    strings = D2RMM.readJson(fileName);
+    strings = readJsonSafe(fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + '), skipping Korlic strings.');
     return;
@@ -677,7 +592,7 @@ function addKorlicStrings() {
   });
 
   try {
-    D2RMM.writeJson(fileName, strings);
+    writeJsonSafe(fileName, strings);
   } catch (error) {
     console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
     return;
@@ -691,7 +606,7 @@ function addKorlicHdMapping() {
   const fileName = 'hd\\items\\items.json';
   let items = null;
   try {
-    items = D2RMM.readJson(fileName);
+    items = readJsonSafe(fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
     return;
@@ -707,7 +622,7 @@ function addKorlicHdMapping() {
     items.push({ [KORLIC_BASE_CODE]: { asset: KORLIC_ITEM_ASSET } });
   }
   try {
-    D2RMM.writeJson(fileName, items);
+    writeJsonSafe(fileName, items);
     console.log('AncientWeapons: mapped ' + KORLIC_BASE_CODE + ' to ' + KORLIC_ITEM_ASSET + ' in ' + fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
@@ -719,7 +634,7 @@ function addKorlicUniqueHdMapping() {
   const fileName = 'hd\\items\\uniques.json';
   let uniques = null;
   try {
-    uniques = D2RMM.readJson(fileName);
+    uniques = readJsonSafe(fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
     return;
@@ -741,7 +656,7 @@ function addKorlicUniqueHdMapping() {
     uniques.push({ [uniqueKey]: mapping });
   }
   try {
-    D2RMM.writeJson(fileName, uniques);
+    writeJsonSafe(fileName, uniques);
     console.log('AncientWeapons: mapped unique ' + KORLIC_UNIQUE_NAME + ' to ' + KORLIC_ITEM_ASSET + ' in ' + fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
@@ -749,11 +664,10 @@ function addKorlicUniqueHdMapping() {
 }
 
 // Copies the Korlic held-weapon asset, its inventory sprite, the coldenchant
-// "mist only" particle and its tiny mask texture into the output. The particle
-// keeps the fx_mesh_KorlicAxe mesh emitter (repointing it crashed the client)
-// but swaps the shell's mask texture for a tiny transparent tblade texture, so
-// the ice shell renders invisibly while the ice-mist emitters stay visible.
-// The held model is the vanilla halberd (the Woestave / Great Poleaxe model).
+// "mist only" particle and its tiny mask texture into the output. The mist is
+// attached as an ObjectEffect on the model entity (NOT a standalone VFX entity)
+// so it survives weapon animations but does not leak on the select screen. The
+// held model is the vanilla halberd (the Woestave / Great Poleaxe model).
 function copyKorlicAssets() {
   try {
     D2RMM.copyFile('assets\\korlics_might.json', KORLIC_ITEM_JSON, true);
@@ -835,19 +749,23 @@ function addKorlicCraftRecipe() {
   });
 }
 
-// Korlic's Might full-body morph, copied from Trang-Oul's Avatar: the
-// vanilla set grants its vampire form through the item `state` property
+// Korlic's Might full-body morph, modeled on Trang-Oul's Avatar: the vanilla
+// set grants its vampire form via the item `state` property
 // (sets.txt FCode='state' FParam='monsterset') pointing at a low-id disguise
-// state (states.txt transform+disguise+gfxtype=1+gfxclass=<monster *hcIdx>).
-// The disguise renderer only honors a few hardcoded transform states
-// (monsterset/delerium/wolf/bear/...); arbitrary states ignore the disguise
-// fields. Reimagined's own sets prove gfxclass is data-driven (monsterset1-4
-// disguise as megademon3/izual/wraith3/andariel), so we repurpose the
-// `monsterset` state (176) and point it at ancientbarb3 (Korlic, id 542).
-// NOTE: this also changes Trang-Oul's full-set vampire form to Korlic.
-const KORLIC_MORPH_STATE = 'monsterset'; // hardcoded item-granted disguise state (176)
-const KORLIC_MORPH_STATE_ID = '176';
-const KORLIC_MONSTER_ID = '542'; // ancientbarb3 (Korlic) *hcIdx
+// state (states.txt transform+disguise+group=3+gfxtype=1+gfxclass=<monster *hcIdx>).
+// The disguise renderer only honors the `monsterset` family plus
+// delerium/wolf/bear; arbitrary state names ignore the disguise fields.
+// Reimagined proves the family is data-driven (monsterset1-4 at ids 231-234
+// disguise as megademon3/izual/wraith3/andariel), so we add `monsterset5` on a
+// free low-id state (230, <=255 so the `state` item property can grant it) and
+// point it at colossal3 (the big Super-Ancient Korlic, hcIdx 747). Using the
+// boss body means the morph is boss-sized and natively wields the cold axe
+// (colossal3_korlic_battle_axe with the ice mist + fx_mesh_KorlicAxe shell at
+// correct proportions). This does NOT touch Trang-Oul's `monsterset` state
+// (176), so the Necromancer keeps its vampire form.
+const KORLIC_MORPH_STATE = 'monsterset5';
+const KORLIC_MORPH_STATE_ID = '230';
+const KORLIC_MONSTER_ID = '747'; // colossal3 (Super-Ancient Korlic) *hcIdx
 
 function writeKorlicMorphState(fileNames) {
   fileNames.forEach((fileName) => {
@@ -866,6 +784,8 @@ function writeKorlicMorphState(fileNames) {
     row.group = '3';
     row.transform = '1';
     row.disguise = '1';
+    row.noclear = '1';
+    row.castoverlay = 'fire_cast_2';
     row.gfxtype = '1';
     row.gfxclass = KORLIC_MONSTER_ID;
     row['*eol'] = '0';
@@ -895,6 +815,291 @@ function attachKorlicMorphToUnique() {
     writeTsvSafe(fileName, data);
   });
   console.log('AncientWeapons: bound Korlic morph to ' + KORLIC_UNIQUE_NAME + ' (prop8 state ' + KORLIC_MORPH_STATE + ')');
+}
+
+// The morph renders colossal3 (the big Super-Ancient Korlic), whose monstats
+// Velocity/Run is 25 - 2.5x the normal ancientbarb3 (10) - so the morphed
+// player moves "like flying". Slow colossal3 down (25 -> 12) so the disguise
+// feels right but still a little heavier than a normal Korlic. colossal3 is
+// not a placed boss (the Ancients quest boss is ancientbarb3, and no
+// superunique uses colossal3), so this only affects the morph.
+function patchKorlicMorphSpeed() {
+  ['global\\excel\\monstats.txt', 'global\\excel\\base\\monstats.txt'].forEach((fileName) => {
+    const data = readTsvSafe(fileName);
+    if (!data) return;
+    const row = data.rows.find((r) => r.Id === 'colossal3');
+    if (!row) return;
+    row.Velocity = '12';
+    row.Run = '12';
+    writeTsvSafe(fileName, data);
+  });
+  console.log('AncientWeapons: slowed colossal3 morph speed to 12/12');
+}
+
+// Adds the custom 1H Flame Sword base (tsf) used by Talic's Flame. Cloned from
+// the Ancient Sword (9wd) but with a lower level/req for early testing; the
+// base keeps type=swor so it is a one-handed sword.
+function addTalicBase() {
+  ['global\\excel\\weapons.txt', 'global\\excel\\base\\weapons.txt'].forEach((fileName) => {
+    const data = readTsvSafe(fileName);
+    if (!data) return;
+    const src = data.rows.find((row) => row.code === '9wd');
+    if (!src) {
+      console.warn('AncientWeapons: Ancient Sword (9wd) not found in ' + fileName + ', skipping Talic base.');
+      return;
+    }
+    let row = data.rows.find((r) => r.code === TALIC_BASE_CODE);
+    if (!row) {
+      row = Object.assign({}, src);
+      row.code = TALIC_BASE_CODE;
+      data.rows.push(row);
+      console.log('AncientWeapons: created Talic base weapon ' + TALIC_BASE_CODE + ' in ' + fileName);
+    } else {
+      console.log('AncientWeapons: updating Talic base weapon ' + TALIC_BASE_CODE + ' in ' + fileName);
+    }
+    row.name = 'Flame Sword';
+    row.type = 'swor';
+    row.version = '100';
+    row.namestr = TALIC_BASE_CODE;
+    row.normcode = TALIC_BASE_CODE;
+    row.ubercode = TALIC_BASE_CODE;
+    row.ultracode = TALIC_BASE_CODE;
+    row.mindam = '35';
+    row.maxdam = '80';
+    row['2handmindam'] = '';
+    row['2handmaxdam'] = '';
+    row.speed = '0';
+    row.reqstr = '85';
+    row.reqdex = '45';
+    row.level = '56';
+    row.levelreq = '42';
+    row.wclass = '1hs';
+    row['2handedwclass'] = '1hs';
+    row.invwidth = '1';
+    row.invheight = '3';
+    if (data.headers.indexOf('missiletype') !== -1) row.missiletype = '0';
+    if (data.headers.indexOf('*comment') !== -1) {
+      row['*comment'] = 'Talic Flame base (Ancient Sword frame, war_sword held model)';
+    }
+    writeTsvSafe(fileName, data);
+  });
+  console.log('AncientWeapons: added Talic base weapon ' + TALIC_BASE_CODE + ' to weapons.txt');
+}
+
+// Adds the new unique on the Flame Sword base. Fire/whirlwind themed after
+// Uber Talic (flame sword + fire twister + fire pierce).
+function addTalicUniqueItem() {
+  ['global\\excel\\uniqueitems.txt', 'global\\excel\\base\\uniqueitems.txt'].forEach((fileName) => {
+    const data = readTsvSafe(fileName);
+    if (!data) return;
+    let row = data.rows.find((r) => r.index === TALIC_UNIQUE_NAME);
+    if (!row) {
+      row = { index: TALIC_UNIQUE_NAME };
+      data.rows.push(row);
+      console.log('AncientWeapons: created Talic unique in ' + fileName);
+    } else {
+      console.log('AncientWeapons: updating Talic unique in ' + fileName);
+    }
+    row['*ID'] = '20002';
+    row.version = '100';
+    row.disabled = '0';
+    row.spawnable = '1';
+    row.rarity = '1';
+    row.nolimit = '0';
+    row.lvl = '56';
+    row['lvl req'] = '42';
+    row.code = TALIC_BASE_CODE;
+    for (let propIndex = 1; propIndex <= 12; propIndex += 1) {
+      row['prop' + propIndex] = '';
+      row['par' + propIndex] = '';
+      row['min' + propIndex] = '';
+      row['max' + propIndex] = '';
+    }
+    row.prop1 = 'dmg%'; row.min1 = '250'; row.max1 = '300';
+    row.prop2 = 'dmg-fire'; row.min2 = '1'; row.max2 = '450';
+    // Reduce enemy fire resistance (fire pierce %).
+    row.prop3 = 'pierce-fire'; row.min3 = '15'; row.max3 = '20';
+    // hit-skill format in this mod: min = chance %, max = skill level.
+    row.prop4 = 'hit-skill'; row.par4 = 'Fireball'; row.min4 = '15'; row.max4 = '10';
+    row.prop5 = 'swing3'; row.min5 = '40'; row.max5 = '40';
+    row.prop6 = 'openwounds'; row.min6 = '40'; row.max6 = '40';
+    row.prop7 = 'allskills'; row.min7 = '2'; row.max7 = '2';
+    // +% Fire Skill Damage (extra-fire).
+    row.prop8 = 'extra-fire'; row.min8 = '15'; row.max8 = '25';
+    row['*eol'] = '0';
+    if (data.headers.indexOf('*CNName') !== -1) {
+      row['*CNName'] = '塔力克之焰';
+    }
+    writeTsvSafe(fileName, data);
+  });
+  console.log('AncientWeapons: added Talic unique to uniqueitems.txt');
+}
+
+// Adds the name strings for the new base and unique to item-names.json.
+function addTalicStrings() {
+  const fileName = 'local\\lng\\strings\\item-names.json';
+  let strings = readJsonSafe(fileName);
+  if (!Array.isArray(strings)) {
+    console.warn('AncientWeapons: unexpected item-names.json format, skipping Talic strings.');
+    return;
+  }
+  const template = strings.find((entry) => entry && typeof entry === 'object' && entry.Key) || {};
+  const entries = [
+    { key: TALIC_BASE_CODE, en: 'Flame Sword', zh: '烈焰之剑', id: 90004 },
+    { key: TALIC_UNIQUE_NAME, en: "Talic's Flame", zh: '塔力克之焰', id: 90005 },
+  ];
+  entries.forEach((entry) => {
+    const existing = strings.find((item) => item && item.Key === entry.key);
+    if (existing) {
+      existing.enUS = entry.en;
+      existing.zhCN = entry.zh;
+      existing.zhTW = entry.zh;
+      existing.id = entry.id;
+      return;
+    }
+    const newEntry = {};
+    Object.keys(template).forEach((key) => {
+      if (key !== 'id' && key !== 'Key') newEntry[key] = '';
+    });
+    newEntry.id = entry.id;
+    newEntry.Key = entry.key;
+    newEntry.enUS = entry.en;
+    newEntry.zhCN = entry.zh;
+    newEntry.zhTW = entry.zh;
+    strings.push(newEntry);
+  });
+  writeJsonSafe(fileName, strings);
+  console.log('AncientWeapons: added Talic item names to ' + fileName);
+}
+
+// Maps the base code to the vanilla War Sword asset so the inventory icon is
+// the Ancient Sword icon (there is no talic_sword inventory sprite to reuse).
+function addTalicHdMapping() {
+  const fileName = 'hd\\items\\items.json';
+  let items = readJsonSafe(fileName);
+  if (!Array.isArray(items)) {
+    console.warn('AncientWeapons: unexpected items.json format in ' + fileName + '.');
+    return;
+  }
+  const existing = items.find((entry) => entry && entry[TALIC_BASE_CODE]);
+  if (existing) {
+    existing[TALIC_BASE_CODE] = { asset: 'sword/war_sword' };
+  } else {
+    items.push({ [TALIC_BASE_CODE]: { asset: 'sword/war_sword' } });
+  }
+  writeJsonSafe(fileName, items);
+  console.log('AncientWeapons: mapped ' + TALIC_BASE_CODE + ' to sword/war_sword for the icon');
+}
+
+// The unique gets the custom flame sword held model (war_sword model + Talic
+// flame blade-shell VFX) via uniques.json; the icon stays the base War Sword.
+function addTalicUniqueHdMapping() {
+  const fileName = 'hd\\items\\uniques.json';
+  let uniques = readJsonSafe(fileName);
+  if (!Array.isArray(uniques)) {
+    console.warn('AncientWeapons: unexpected uniques.json format in ' + fileName + '.');
+    return;
+  }
+  const uniqueKey = 'talics_flame';
+  const existing = uniques.find((entry) => entry && entry[uniqueKey]);
+  const mapping = { normal: TALIC_ITEM_ASSET, uber: TALIC_ITEM_ASSET, ultra: TALIC_ITEM_ASSET };
+  if (existing) {
+    existing[uniqueKey] = mapping;
+  } else {
+    uniques.push({ [uniqueKey]: mapping });
+  }
+  writeJsonSafe(fileName, uniques);
+  console.log('AncientWeapons: mapped unique ' + TALIC_UNIQUE_NAME + ' to ' + TALIC_ITEM_ASSET);
+}
+
+// Copies the custom Talic held-weapon asset (talic_sword model + persistent
+// fire_arrow Vfx that hugs the blade) into the output.
+function copyTalicAssets() {
+  try {
+    D2RMM.copyFile('assets\\talics_flame.json', TALIC_ITEM_JSON, true);
+    console.log('AncientWeapons: copied Talic held-weapon asset to ' + TALIC_ITEM_JSON);
+  } catch (error) {
+    console.warn('AncientWeapons: could not copy Talic held-weapon asset (' + error.message + ').');
+  }
+}
+
+// Test recipe: any weapon + Io (r16) -> Talic's Flame.
+function addTalicCraftRecipe() {
+  const description = 'Talic Flame Craft (weap + r16)';
+  ['global\\excel\\cubemain.txt', 'global\\excel\\base\\cubemain.txt'].forEach((fileName) => {
+    const cubemain = readTsvSafe(fileName);
+    if (!cubemain) return;
+    if (cubemain.headers.indexOf('lvl') === -1) {
+      console.warn('AncientWeapons: unsupported cubemain layout in ' + fileName + ', skipping Talic recipe.');
+      return;
+    }
+    cubemain.rows = cubemain.rows.filter((row) => row.description !== description);
+    cubemain.rows.push({
+      description: description,
+      enabled: '1',
+      firstLadderSeason: '',
+      lastLadderSeason: '',
+      'min diff': '',
+      version: '100',
+      op: '',
+      param: '',
+      value: '',
+      class: '',
+      numinputs: '2',
+      'input 1': 'weap',
+      'input 2': 'r16',
+      'input 3': '', 'input 4': '', 'input 5': '', 'input 6': '', 'input 7': '',
+      output: '"' + TALIC_BASE_CODE + ',uni"',
+      lvl: '99',
+      plvl: '',
+      ilvl: '',
+      'mod 1': '', 'mod 1 chance': '', 'mod 1 param': '', 'mod 1 min': '', 'mod 1 max': '',
+      '*eol': '0',
+    });
+    writeTsvSafe(fileName, cubemain);
+  });
+  console.log('AncientWeapons: added Talic craft recipe to cubemain.txt');
+}
+
+// Test recipe: any weapon + Lum rune (r17) -> a Crystal Sword. With the
+// ElementalSwordSkins mod enabled (default skins crystal_sword with "Flaming
+// Sword 1" = fire_arrow), this spawns that mod's flaming arrow sword so the
+// select-screen residue behavior can be checked.
+function addElementalSwordTestRecipe() {
+  const description = 'ElementalSwordSkins Flame Test (weap + r17)';
+  ['global\\excel\\cubemain.txt', 'global\\excel\\base\\cubemain.txt'].forEach((fileName) => {
+    const cubemain = readTsvSafe(fileName);
+    if (!cubemain) return;
+    if (cubemain.headers.indexOf('lvl') === -1) {
+      console.warn('AncientWeapons: unsupported cubemain layout in ' + fileName + ', skipping ElementalSwordSkins test recipe.');
+      return;
+    }
+    cubemain.rows = cubemain.rows.filter((row) => row.description !== description);
+    cubemain.rows.push({
+      description: description,
+      enabled: '1',
+      firstLadderSeason: '',
+      lastLadderSeason: '',
+      'min diff': '',
+      version: '100',
+      op: '',
+      param: '',
+      value: '',
+      class: '',
+      numinputs: '2',
+      'input 1': 'weap',
+      'input 2': 'r17',
+      'input 3': '', 'input 4': '', 'input 5': '', 'input 6': '', 'input 7': '',
+      output: '"crs"',
+      lvl: '',
+      plvl: '',
+      ilvl: '',
+      'mod 1': '', 'mod 1 chance': '', 'mod 1 param': '', 'mod 1 min': '', 'mod 1 max': '',
+      '*eol': '0',
+    });
+    writeTsvSafe(fileName, cubemain);
+  });
+  console.log('AncientWeapons: added ElementalSwordSkins flame test recipe to cubemain.txt');
 }
 
 // Test recipe: any weapon + r15 (Io) -> the same weapon with the `state`
@@ -945,11 +1150,12 @@ function addKorlicMorphTestRecipe() {
   });
 }
 
-// The 91735 engine does not spawn custom missile ids (maxId+1 = 733 falls back
-// to a fire bolt; the 725 hole shows nothing), so Madawc's Fury reuses the
-// vanilla 'ancient throwing axe' missile (id 525, unused by players) and remaps
-// its HD asset to a custom clear Gnasher lightning-axe resource. This is the
-// configuration the user verified as "the lightning axe".
+// Madawc's Fury reuses the vanilla 'ancient throwing axe' missile (id 525,
+// unused by player weapons) and remaps its HD asset to a custom Gnasher
+// lightning-axe resource. The resource uses the original colossal-throwing-axe
+// particle (solid Gnasher axe + plasma/fresnel lightning membrane + arcs), so
+// the thrown look matches Uber Madawc's. Custom missile ids (725/733) do not
+// spawn on the 91735 engine.
 function registerMadawcAxeHdAsset() {
   try {
     D2RMM.copyFile(
@@ -965,7 +1171,7 @@ function registerMadawcAxeHdAsset() {
   const fileName = 'hd\\missiles\\missiles.json';
   let missiles;
   try {
-    missiles = D2RMM.readJson(fileName);
+    missiles = readJsonSafe(fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not read ' + fileName + ' (' + error.message + ').');
     return;
@@ -977,7 +1183,7 @@ function registerMadawcAxeHdAsset() {
   missiles['ancient throwing axe'] = 'madawc_axe';
   missiles.ancient_throwing_axe = 'madawc_axe';
   try {
-    D2RMM.writeJson(fileName, missiles);
+    writeJsonSafe(fileName, missiles);
     console.log('AncientWeapons: mapped ancient throwing axe to madawc_axe in ' + fileName);
   } catch (error) {
     console.warn('AncientWeapons: could not write ' + fileName + ' (' + error.message + ').');
@@ -985,6 +1191,8 @@ function registerMadawcAxeHdAsset() {
 }
 // Tune the shared 525 row so Madawc's Fury throws fast/long.
 function tuneMadawcSourceMissile() {
+  const cfg = typeof config !== 'undefined' && config ? config : {};
+  const chargedBolts = typeof cfg.chargedBolts === 'boolean' ? cfg.chargedBolts : true;
   ['global\\excel\\missiles.txt', 'global\\excel\\base\\missiles.txt'].forEach((fileName) => {
     const data = readTsvSafe(fileName);
     if (!data) return;
@@ -993,9 +1201,28 @@ function tuneMadawcSourceMissile() {
     row.Vel = '32';
     row.MaxVel = '32';
     row.Range = '80';
+    // Madawc's thrown-axe gimmick: spawn charged bolts on every hit, exactly
+    // like the vanilla 'colossal throwing axe' (pSrvHitFunc 60 + pCltHitFunc
+    // 46 are the hit functions that actually spawn HitSubMissile1 /
+    // CltHitSubMissile1 - without them the sub-missiles never appear). NOTE:
+    // at high Double Throw levels this floods the screen and can crash the
+    // client (Reimagined's crash came from its chargedbolt row scaling count
+    // with level, which vanilla does not do); the `chargedBolts` mod config
+    // toggles it.
+    if (chargedBolts) {
+      row.HitSubMissile1 = 'chargedbolt';
+      row.CltHitSubMissile1 = 'chargedbolt';
+      row.pSrvHitFunc = '60';
+      row.pCltHitFunc = '46';
+    } else {
+      row.HitSubMissile1 = '';
+      row.CltHitSubMissile1 = '';
+      row.pSrvHitFunc = '';
+      row.pCltHitFunc = '';
+    }
     writeTsvSafe(fileName, data);
   });
-  console.log('AncientWeapons: tuned ancient throwing axe missile (fast/long)');
+  console.log('AncientWeapons: tuned ancient throwing axe missile (fast/long, chargedBolts=' + chargedBolts + ')');
 }
 const madawcMissile = '525'; // 'ancient throwing axe'
 tuneMadawcSourceMissile();
@@ -1018,4 +1245,17 @@ addKorlicCraftRecipe();
 
 writeKorlicMorphState(['global\\excel\\states.txt', 'global\\excel\\base\\states.txt']);
 attachKorlicMorphToUnique();
+patchKorlicMorphSpeed();
 addKorlicMorphTestRecipe();
+
+addTalicBase();
+addTalicUniqueItem();
+addTalicStrings();
+addTalicHdMapping();
+addTalicUniqueHdMapping();
+copyTalicAssets();
+addTalicCraftRecipe();
+addElementalSwordTestRecipe();
+
+// Write every touched file once (the I/O cache deferred all writes above).
+flushIo();

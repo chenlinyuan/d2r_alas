@@ -66,11 +66,41 @@ function writeTsvSafe(fileName, data) {
   }
 }
 
+// item-names.json is ~800KB, and two functions touch it (xpp name +
+// PotionExperienceDesc). Cache the read and defer the single write to the
+// end of setupExpPotion() so the big file is only parsed/serialized once.
+let _itemNamesCache = null;
+let _itemNamesDirty = false;
+function readItemNames() {
+  if (_itemNamesCache) return _itemNamesCache;
+  try {
+    _itemNamesCache = D2RMM.readJson('local\\lng\\strings\\item-names.json');
+  } catch (error) {
+    console.warn('ExpPotion: could not read item-names.json (' + error.message + ').');
+    return null;
+  }
+  return _itemNamesCache;
+}
+function writeItemNames(strings) {
+  _itemNamesCache = strings;
+  _itemNamesDirty = true;
+}
+function flushItemNames() {
+  if (_itemNamesDirty && _itemNamesCache) {
+    try {
+      D2RMM.writeJson('local\\lng\\strings\\item-names.json', _itemNamesCache);
+    } catch (error) {
+      console.warn('ExpPotion: could not write item-names.json (' + error.message + ').');
+    }
+  }
+  _itemNamesDirty = false;
+}
+
 function updatePotionDescription(levels) {
   const fileName = 'local\\lng\\strings\\item-names.json';
   let strings;
   try {
-    strings = D2RMM.readJson(fileName);
+    strings = readItemNames();
   } catch (error) {
     console.warn(
       'ExpPotion: could not read ' + fileName + ' (' + error.message + '), skipping description.'
@@ -104,7 +134,7 @@ function updatePotionDescription(levels) {
   desc.zhTW =
     'ÿc4喝下後獲得升 %d 級所需的經驗\n（升級在下次獲得經驗時結算）';
   try {
-    D2RMM.writeJson(fileName, strings);
+    writeItemNames(strings);
   } catch (error) {
     console.warn('ExpPotion: could not write ' + fileName + ' (' + error.message + ').');
   }
@@ -144,7 +174,7 @@ function addXppNameStrings() {
   const fileName = 'local\\lng\\strings\\item-names.json';
   let strings;
   try {
-    strings = D2RMM.readJson(fileName);
+    strings = readItemNames();
   } catch (error) {
     console.warn('ExpPotion: could not read ' + fileName + ' (' + error.message + '), skipping name.');
     return;
@@ -169,7 +199,7 @@ function addXppNameStrings() {
   entry.zhCN = '经验药水';
   entry.zhTW = '經驗藥水';
   try {
-    D2RMM.writeJson(fileName, strings);
+    writeItemNames(strings);
     console.log('ExpPotion: added xpp name strings to ' + fileName);
   } catch (error) {
     console.warn('ExpPotion: could not write ' + fileName + ' (' + error.message + ').');
@@ -229,6 +259,7 @@ function setupExpPotion() {
   registerXppHdIcon();
   addXppNameStrings();
   updatePotionDescription(levels);
+  flushItemNames();
   console.log('ExpPotion: xpp now costs 1 gold and grants ' + levels + ' level(s) per drink');
 }
 

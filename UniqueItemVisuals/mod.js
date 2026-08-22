@@ -1,8 +1,8 @@
 // Unique Item Visuals
 //
-// Adds item-provided state visuals to existing uniques/runewords (wings), and
-// gives Thor's Hammer (from the ThorHammer mod) a golden glow that is injected
-// directly into its hand-held item asset (see THOR_GLOW_* below).
+// Adds item-provided state visuals to existing uniques/runewords (wings):
+// equip-gated HD particle overlays, or an always-on injection into every
+// player model (see the `alwaysOn` config).
 //
 // Classic graphics mode:
 //   1. overlay.txt maps classic DCC wing animations (extracted from Tyrael's
@@ -60,79 +60,9 @@ const PLAYER_JSON_FILES = [
   'hd\\character\\player\\warlock.json',
 ];
 
-// Item-granted wing bindings via the borrowed `debugcontrol` state. Thor's
-// Hammer was removed from this list: it now gets its golden glow directly on
-// the hand-held item model (see THOR_GLOW_* below) instead of wings.
+// Item-granted wing bindings via the borrowed `debugcontrol` state.
+// Thor's Hammer was removed from this list (wings are handled per-item).
 const WING_BINDINGS = [];
-
-// Thor's Hammer golden hammer: injected into the hand-held item asset that the
-// ThorHammer mod writes (hd\items\weapon\hammer\thor_hammer.json). The held
-// Charsi hammer mesh is swapped for the static Blessed Hammer mesh -- the
-// golden hammer seen when the weapon is thrown -- so the equipped hammer
-// becomes a static golden hammer instead of using a rotating missile particle.
-// The state/itemtrans approach was dropped: the engine does not tint 3D weapon
-// models via states.txt `itemtrans` in HD mode, and a yellow tint on an
-// already-gold hammer was invisible.
-// Position/size are tunable from the mod config (hammerGlow*).
-const THOR_GLOW_ITEM_JSON = 'hd\\items\\weapon\\hammer\\thor_hammer.json';
-const THOR_CHARSI_MODEL =
-  'data/hd/items/weapon/hammer/_monsters/charsi_hammer/charsi_hammer.model';
-const THOR_GLOW_MODEL =
-  'data/hd/items/weapon/hammer/_monsters/charsi_hammer/charsi_hammer.model';
-const THOR_GLOW_SHELL_MODEL =
-  'data/hd/vfx/meshes/missiles/blessedhammer/blessedhammer_transparent.model';
-const THOR_GLOW_TEXTURES = [
-  'data/hd/character/npc/charsi/textures/charsi_hammer_ALB.texture',
-  'data/hd/character/npc/charsi/textures/charsi_hammer_NRM.texture',
-  'data/hd/character/npc/charsi/textures/charsi_hammer_ORM.texture',
-];
-const THOR_GNASHER_OBJECT_FX =
-  'data/hd/vfx/particles/overlays/warlock/eldritch_weapon_outlines/levitate/axe/unique_axes/vfx_levitating_the_gnasher_objectFX.particles';
-// ElementalSwordSkins-style golden glow: a pure particle effect appended to
-// the hand-held item JSON (VfxDefinitionComponent + TransformDefinitionComponent).
-// This is the same fire-arrow particle ElementalSwordSkins uses for its
-// flaming-sword skin, so it hugs the equipped weapon without emitting a second
-// model and without the long Horadric light beam.
-const THOR_PARTICLE_GLOW =
-  'data/hd/vfx/particles/missiles/fire_arrow/fx_fire_projectile_arrow.particles';
-const THOR_PARTICLE_GLOW_ENTITY = 'entity_thor_particle_glow';
-// Korlic's blue Fresnel weapon-outline particle. Unlike the native Warlock
-// fresnel shader, this is a compiled object-effect particle designed to track
-// the equipped weapon model, so it works outside the Warlock state machine.
-const THOR_KORLIC_WEAPON_VFX =
-  'data/hd/vfx/particles/character/enemy/ancientbarb3/vfx_ancientbarb3_objfx_on_weapons.particles';
-const THOR_KORLIC_OUTLINE_ENTITY = 'entity_thor_korlic_outline';
-const THOR_KORLIC_WEAPON_VFX_SRC =
-  'assets\\vfx_ancientbarb3_hammer_out.particles';
-const THOR_KORLIC_WEAPON_VFX_DST =
-  'hd\\vfx\\particles\\character\\enemy\\ancientbarb3\\vfx_ancientbarb3_hammer_out.particles';
-const THOR_KORLIC_WEAPON_MODEL =
-  'data/hd/vfx/meshes/missiles/blessedhammer/blessedhammer_glow_shell_01a.model';
-const THOR_KORLIC_WEAPON_MODEL_SRC =
-  'assets\\blessedhammer_glow_shell_01a_lod0.model';
-const THOR_KORLIC_WEAPON_MODEL_DST =
-  'hd\\vfx\\meshes\\missiles\\blessedhammer\\blessedhammer_glow_shell_01a_lod0.model';
-// Thor weapon glow: the native Warlock fresnel/outline approach did not
-// render on non-Warlock player models in testing, so the code below is no
-// longer called. The active Thor glow is now the ElementalSwordSkins-style
-// pure gold-light particle entity appended directly to thor_hammer.json.
-const THOR_FRESNEL_STATE = 'uiv_thor_glow';
-const THOR_FRESNEL_STATE_ID = '308';
-const THOR_FRESNEL_SKILL = 'uiv_wing_passive_thor';
-const THOR_FRESNEL_SKILL_ID = '498';
-// states.txt `itemtype` is compared against the weapon's type code. Thor's
-// Hammer is added by ThorHammer as type `thmx`, so the weapon effect state
-// must use `thmx` (not the generic `weap` we used in the first failed test).
-const THOR_FRESNEL_ITEMTYPE = 'mele';
-const THOR_FRESNEL_GRADIENT =
-  'data/hd/vfx/textures/fresnel/T_FX_FresnelGrad_03_Hori_Mirror.texture';
-const THOR_FRESNEL_TEXTURES = [
-  'data/hd/vfx/textures/fresnel/T_FX_FresnelGrad_03_Hori_Mirror.texture',
-  'data/hd/vfx/textures/fresnel/T_FX_smokey_01.texture',
-  'data/hd/vfx/textures/fresnel/T_FX_gaussian_noise_gray.texture',
-  'data/hd/vfx/textures/fresnel/warlock_vfx_hand_ALB.texture',
-  'data/hd/vfx/textures/fresnel/warlock_vfx_glove_ALB.texture',
-];
 
 // Templar's Might uses the wispGold style (white wisp + golden aura). That
 // style is already wired to the borrowed `chroniclefootprints` state (219) by
@@ -420,29 +350,62 @@ const CUSTOM_WING_ASSETS = [
   },
 ];
 
+// ---- I/O cache: read each file once, write each file once at the end ----
+// Many functions touch the same tables (states/overlay/skills/uniqueitems/
+// strings/...). Caching reads and deferring writes collapses the repeated
+// read+write cycles per file into one, speeding up the D2RMM install.
+const _ioCache = new Map();   // fileName -> { kind: 'tsv'|'json', data }
+const _ioPending = new Map(); // fileName -> { kind: 'tsv'|'json', data }
+
 function readTsvSafe(fileName) {
+  if (_ioCache.has(fileName)) return _ioCache.get(fileName).data;
+  let data = null;
   try {
-    return D2RMM.readTsv(fileName, { removeCarriageReturns: true });
+    data = D2RMM.readTsv(fileName, { removeCarriageReturns: true });
   } catch (error) {
     console.debug(
       'UniqueItemVisuals: could not read ' + fileName + ' (' + error.message + '), skipping.'
     );
-    return null;
   }
+  _ioCache.set(fileName, { kind: 'tsv', data });
+  return data;
 }
 
 function writeTsvSafe(fileName, data) {
-  try {
-    D2RMM.writeTsv(fileName, data, { addCarriageReturns: true });
-  } catch (error) {
-    console.warn('UniqueItemVisuals: could not write ' + fileName + ' (' + error.message + ').');
-  }
+  _ioCache.set(fileName, { kind: 'tsv', data });
+  _ioPending.set(fileName, { kind: 'tsv', data });
 }
 
-function pushUnique(list, item, key) {
-  if (!Array.isArray(list)) return;
-  const exists = list.some((entry) => entry[key] === item[key]);
-  if (!exists) list.push(item);
+function readJsonSafe(fileName) {
+  if (_ioCache.has(fileName)) return _ioCache.get(fileName).data;
+  let data = null;
+  try {
+    data = D2RMM.readJson(fileName);
+  } catch (error) {
+    console.warn('UniqueItemVisuals: could not read ' + fileName + ' (' + error.message + ').');
+  }
+  _ioCache.set(fileName, { kind: 'json', data });
+  return data;
+}
+
+function writeJsonSafe(fileName, data) {
+  _ioCache.set(fileName, { kind: 'json', data });
+  _ioPending.set(fileName, { kind: 'json', data });
+}
+
+function flushIo() {
+  _ioPending.forEach((entry, fileName) => {
+    try {
+      if (entry.kind === 'tsv') {
+        D2RMM.writeTsv(fileName, entry.data, { addCarriageReturns: true });
+      } else {
+        D2RMM.writeJson(fileName, entry.data);
+      }
+    } catch (error) {
+      console.warn('UniqueItemVisuals: could not write ' + fileName + ' (' + error.message + ').');
+    }
+  });
+  _ioPending.clear();
 }
 
 // Builds one pure-particle entity. This mirrors the structure the "tiny
@@ -538,7 +501,7 @@ function injectPlayerWingFallback() {
   PLAYER_JSON_FILES.forEach((fileName) => {
     let definition;
     try {
-      definition = D2RMM.readJson(fileName);
+      definition = readJsonSafe(fileName);
     } catch (error) {
       console.warn(
         'UniqueItemVisuals: could not read ' + fileName + ' (' + error.message + ').'
@@ -563,7 +526,7 @@ function injectPlayerWingFallback() {
     makeParticleWingEntities(style).forEach((entity) => definition.entities.push(entity));
 
     try {
-      D2RMM.writeJson(fileName, definition);
+      writeJsonSafe(fileName, definition);
       console.log('UniqueItemVisuals: added ' + styleName + ' wing particles to ' + fileName);
     } catch (error) {
       console.warn(
@@ -947,7 +910,7 @@ function writeHdWingOverlays(style) {
       overlay.includeWings
     );
     try {
-      D2RMM.writeJson(fileName, data);
+      writeJsonSafe(fileName, data);
       console.log(
         'UniqueItemVisuals: wrote HD overlay ' + fileName + ' (' + data.entities.length + ' entities)'
       );
@@ -1076,7 +1039,7 @@ function writeRuneWingOverlays() {
         overlay.include && style !== null
       );
       try {
-        D2RMM.writeJson(fileName, data);
+        writeJsonSafe(fileName, data);
       } catch (error) {
         console.warn(
           'UniqueItemVisuals: could not write ' + fileName + ' (' + error.message + ').'
@@ -1346,7 +1309,7 @@ function writeEnigmaWingOverlays() {
       overlay.include
     );
     try {
-      D2RMM.writeJson(fileName, data);
+      writeJsonSafe(fileName, data);
     } catch (error) {
       console.warn(
         'UniqueItemVisuals: could not write ' + fileName + ' (' + error.message + ').'
@@ -1512,7 +1475,7 @@ function writeArmorWingOverlays() {
         overlay.include && style !== null
       );
       try {
-        D2RMM.writeJson(fileName, data);
+        writeJsonSafe(fileName, data);
       } catch (error) {
         console.warn(
           'UniqueItemVisuals: could not write ' + fileName + ' (' + error.message + ').'
@@ -1582,326 +1545,6 @@ function attachWingToUniqueArmors() {
   );
 }
 
-// Injects the golden glow VFX entity into the hand-held item asset that the
-// ThorHammer mod writes, so the equipped hammer glows gold like the thrown
-// hammer. Idempotent: any previously injected entity is removed first.
-function injectThorHammerGlow() {
-  let data;
-  try {
-    data = D2RMM.readJson(THOR_GLOW_ITEM_JSON);
-  } catch (error) {
-    console.warn(
-      'UniqueItemVisuals: could not read ' +
-        THOR_GLOW_ITEM_JSON +
-        ' (' +
-        error.message +
-        '), skipping Thor glow.'
-    );
-    return;
-  }
-  if (!data || !data.entities || !data.dependencies) {
-    console.warn('UniqueItemVisuals: unexpected thor_hammer.json format, skipping Thor glow.');
-    return;
-  }
-  const cfg = typeof config !== 'undefined' && config ? config : {};
-  const scale = parseFloat(cfg.hammerGlowScale);
-  const s = isNaN(scale) ? 1.0 : Math.max(0.05, Math.min(10, scale));
-  const yOff = parseFloat(cfg.hammerGlowY);
-  const y = isNaN(yOff) ? -0.2 : Math.max(-5, Math.min(5, yOff));
-  const xOff = parseFloat(cfg.hammerGlowX);
-  const x = isNaN(xOff) ? 0.0 : Math.max(-5, Math.min(5, xOff));
-  const zOff = parseFloat(cfg.hammerGlowZ);
-  const z = isNaN(zOff) ? 0.0 : Math.max(-5, Math.min(5, zOff));
-  const enabled = cfg.hammerGlowEnabled !== false;
-
-  // Remove any previously injected entities / missile particles (idempotent).
-  data.entities = data.entities.filter(
-    (e) =>
-      e.name !== 'entity_thor_glow' &&
-      e.name !== 'entity_thor_aura' &&
-      e.name !== 'entity_thor_shell' &&
-      e.name !== THOR_PARTICLE_GLOW_ENTITY &&
-      e.name !== THOR_KORLIC_OUTLINE_ENTITY
-  );
-  data.dependencies.particles = (data.dependencies.particles || []).filter(
-    (p) =>
-      p.path.indexOf('blessedhammer_missile') < 0 &&
-      p.path.indexOf('valkyrie_aura') < 0 &&
-      p.path !== THOR_PARTICLE_GLOW &&
-      p.path !== THOR_KORLIC_WEAPON_VFX
-  );
-  data.dependencies.objecteffects = (data.dependencies.objecteffects || []).filter(
-    (o) =>
-      o.path !== THOR_KORLIC_WEAPON_VFX &&
-      o.path !== THOR_GNASHER_OBJECT_FX
-  );
-
-  const rootEntity = data.entities.find(
-    (e) => e.name === 'root_entity' || e.name === 'entity_root'
-  );
-  if (rootEntity) {
-    rootEntity.components = rootEntity.components.filter(
-      (c) =>
-        !(
-          c.type === 'ObjectEffectDefinitionComponent' &&
-          c.filename === THOR_KORLIC_WEAPON_VFX
-        )
-    );
-  }
-
-  const modelEntity = data.entities.find((e) => e.name === 'model_entity');
-  if (modelEntity) {
-    const modelComp = modelEntity.components.find((c) => c.type === 'ModelDefinitionComponent');
-    if (!modelComp) {
-      console.warn('UniqueItemVisuals: ModelDefinitionComponent not found, skipping Thor glow.');
-      return;
-    }
-    modelEntity.components = modelEntity.components.filter(
-      (c) =>
-        !(
-          (c.type === 'ObjectEffectDefinitionComponent' ||
-            c.type === 'VfxDefinitionComponent') &&
-          (c.filename === THOR_KORLIC_WEAPON_VFX ||
-            c.filename === THOR_GNASHER_OBJECT_FX)
-        )
-    );
-    modelComp.filename = enabled ? THOR_GLOW_MODEL : THOR_CHARSI_MODEL;
-    modelComp.visibleLayers = enabled ? 1 : 1;
-    modelEntity.components = modelEntity.components.filter(
-      (c) => c.type !== 'TransformDefinitionComponent'
-    );
-    if (enabled) {
-      modelEntity.components.push({
-        type: 'TransformDefinitionComponent',
-        name: 'entity_model_TransformDefinition',
-        position: { x: x, y: y, z: z },
-        orientation: { x: 0.0, y: 0.0, z: 0.0, w: 1.0 },
-        scale: { x: s, y: s, z: s },
-        inheritOnlyPosition: false,
-      });
-    }
-  }
-
-  const hasPath = (list, path) => list.some((entry) => entry.path === path);
-  if (!data.dependencies.models) data.dependencies.models = [];
-  if (!data.dependencies.textures) data.dependencies.textures = [];
-  data.dependencies.models = data.dependencies.models.filter(
-    (m) =>
-      m.path !== THOR_CHARSI_MODEL &&
-      m.path !== THOR_GLOW_MODEL &&
-      m.path !== THOR_GLOW_SHELL_MODEL &&
-      m.path !== THOR_KORLIC_WEAPON_MODEL &&
-      m.path !== 'data/hd/items/weapon/axe/the_gnasher/the_gnasher.model'
-  );
-  data.dependencies.textures = data.dependencies.textures.filter(
-    (t) =>
-      t.path.indexOf('charsi_hammer_') < 0 &&
-      THOR_GLOW_TEXTURES.indexOf(t.path) < 0
-  );
-  if (enabled) {
-    data.dependencies.models.push({ path: THOR_GLOW_MODEL });
-    THOR_GLOW_TEXTURES.forEach((t) => {
-      if (!hasPath(data.dependencies.textures, t)) data.dependencies.textures.push({ path: t });
-    });
-  } else {
-    data.dependencies.models.push({ path: THOR_CHARSI_MODEL });
-  }
-  try {
-    D2RMM.writeJson(THOR_GLOW_ITEM_JSON, data);
-    console.log(
-      'UniqueItemVisuals: set Thor hammer model to ' +
-        (enabled ? 'blessed hammer' : 'Charsi hammer') +
-        (enabled ? '' : ' (disabled)')
-    );
-  } catch (error) {
-    console.warn(
-      'UniqueItemVisuals: could not write ' +
-        THOR_GLOW_ITEM_JSON +
-        ' (' +
-        error.message +
-        ').'
-    );
-  }
-}
-
-// Injects the native Warlock fresnel/outline shader into every player JSON so
-// the equipped weapon can receive a weapon-hugging golden glow. The shader is
-// gated by a state's vfxweaponstate value (the same mechanism the Warlock's
-// hexbane/siphon/purge states use), so it only shows while Thor's Hammer is
-// equipped.
-function injectThorWeaponFresnel() {
-  PLAYER_JSON_FILES.forEach((fileName) => {
-    let data;
-    try {
-      data = D2RMM.readJson(fileName);
-    } catch (error) {
-      console.warn(
-        'UniqueItemVisuals: could not read ' + fileName + ' (' + error.message + ').'
-      );
-      return;
-    }
-    if (!data || !data.entities || !data.dependencies) return;
-    const root = data.entities.find((e) => e.name === 'entity_root');
-    if (!root) return;
-    root.components = root.components.filter(
-      (c) => c.name !== 'entity_root_WarlockEffectsDefinition_thor'
-    );
-    root.components.push({
-      type: 'WarlockEffectsDefinitionComponent',
-      name: 'entity_root_WarlockEffectsDefinition_thor',
-      fresnelEffectSettings: {
-        type: 'FresnelModelEffectParameters',
-        name: 'entity_root_WarlockEffectsDefinition_thor_fresnel',
-        handFresnelGradientCursor: 0.35,
-        handFresnelUScrollStep: -0.7,
-        handFresnelVScrollStep: 0.5,
-        handFresnelPower: 1.0,
-        handFresnelAlpha: 1.0,
-        handNoiseBaseContribution: 1.0,
-        handNoiseBlendContribution: 1.0,
-        handUVScaleX: 5.0,
-        handUVScaleY: 10.0,
-        weaponFresnelGradientCursor: 0.3,
-        weaponFresnelUScrollStep: 0.5,
-        weaponFresnelVScrollStep: 1.25,
-        weaponFresnelPower: 1.0,
-        weaponFresnelAlpha: 1.0,
-        weaponNoiseBaseContribution: 1.0,
-        weaponNoiseBlendContribution: 1.0,
-        weaponUVScaleX: 1.0,
-        weaponUVScaleY: 1.0,
-        verticalCursorStep: 0.325,
-        mirroredWeaponStartingStrength: 0.8,
-        isOnArm: false,
-        isOnWeapon: true,
-        isOnMirroredWeapon: true,
-      },
-      outlineEffectSettings: {
-        type: 'OutlineModelEffectParameters',
-        name: 'entity_root_WarlockEffectsDefinition_thor_outline',
-        handOutlineGradientCursor: 1.0,
-        handOutlineUScrollStep: 0.5,
-        handOutlineVScrollStep: 1.25,
-        handOutlineIntensity: 2.3,
-        handNoiseBaseContribution: 1.0,
-        handNoiseBlendContribution: 1.0,
-        weaponOutlineGradientCursor: 0.3,
-        weaponOutlineUScrollStep: 0.5,
-        weaponOutlineVScrollStep: 1.25,
-        weaponOutlineIntensity: 1.5,
-        weaponNoiseBaseContribution: 1.0,
-        weaponNoiseBlendContribution: 1.2,
-        verticalCursorStep: 0.325,
-        horizontalCursorOffset: 0.4,
-        mirroredWeaponStartingStrength: 0.8,
-        isOnArm: false,
-        isOnWeapon: true,
-        isOnMirroredWeapon: true,
-      },
-      GradientRemap: THOR_FRESNEL_GRADIENT,
-      NoiseBase: 'data/hd/vfx/textures/fresnel/T_FX_smokey_01.texture',
-      NoiseBlend: 'data/hd/vfx/textures/fresnel/T_FX_gaussian_noise_gray.texture',
-      WarlockEffectGradient: THOR_FRESNEL_GRADIENT,
-      WarlockEffectMaskHand:
-        'data/hd/vfx/textures/fresnel/warlock_vfx_hand_ALB.texture',
-      WarlockEffectMaskGlove:
-        'data/hd/vfx/textures/fresnel/warlock_vfx_glove_ALB.texture',
-    });
-    if (!data.dependencies.textures) data.dependencies.textures = [];
-    THOR_FRESNEL_TEXTURES.forEach((t) => {
-      if (!data.dependencies.textures.some((entry) => entry.path === t)) {
-        data.dependencies.textures.push({ path: t });
-      }
-    });
-    try {
-      D2RMM.writeJson(fileName, data);
-    } catch (error) {
-      console.warn(
-        'UniqueItemVisuals: could not write ' + fileName + ' (' + error.message + ').'
-      );
-    }
-  });
-  console.log('UniqueItemVisuals: injected Thor weapon fresnel shader into player JSONs');
-}
-
-// Dedicated high-id state that turns on the injected weapon fresnel shader.
-function writeThorFresnelState(fileNames) {
-  fileNames.forEach((fileName) => {
-    const data = readTsvSafe(fileName);
-    if (!data) return;
-    let row = data.rows.find((r) => r.state === THOR_FRESNEL_STATE);
-    if (!row) {
-      row = {};
-      data.headers.forEach((header) => {
-        row[header] = '';
-      });
-      data.rows.push(row);
-    }
-    row.state = THOR_FRESNEL_STATE;
-    row['*ID'] = THOR_FRESNEL_STATE_ID;
-    row.itemtype = THOR_FRESNEL_ITEMTYPE;
-    row['*eol'] = '0';
-    if ('vfxweaponstate' in row) row.vfxweaponstate = '1';
-    writeTsvSafe(fileName, data);
-  });
-  console.log('UniqueItemVisuals: wrote Thor fresnel state ' + THOR_FRESNEL_STATE);
-}
-
-// Hidden passive skill whose passivestate is the weapon fresnel state.
-function writeThorFresnelSkill(fileNames) {
-  fileNames.forEach((fileName) => {
-    const data = readTsvSafe(fileName);
-    if (!data) return;
-    data.rows = data.rows.filter((r) => r.skill !== THOR_FRESNEL_SKILL);
-    const template =
-      data.rows.find((r) => r.skill === 'Hidden Charm Passive') ||
-      data.rows.find((r) => r.skill === 'uiv_wing_passive_white') ||
-      data.rows[data.rows.length - 1] ||
-      {};
-    const row = {};
-    data.headers.forEach((header) => {
-      row[header] = template[header] || '';
-    });
-    row.skill = THOR_FRESNEL_SKILL;
-    row['*CNName'] = '';
-    row['*Id'] = THOR_FRESNEL_SKILL_ID;
-    row.skilldesc = '';
-    row.passivestate = THOR_FRESNEL_STATE;
-    row.passive = '1';
-    for (let i = 1; i <= 14; i++) {
-      row['passivestat' + i] = '';
-      row['passivecalc' + i] = '';
-    }
-    for (let i = 1; i <= 5; i++) {
-      row['Param' + i] = '';
-      row['*Param' + i + ' Description'] = '';
-    }
-    row['*eol'] = '0';
-    data.rows.push(row);
-    writeTsvSafe(fileName, data);
-  });
-  console.log('UniqueItemVisuals: wrote Thor fresnel skill ' + THOR_FRESNEL_SKILL);
-}
-
-// Binds the hidden passive into Thor's Hammer's reserved prop12 slot.
-function attachThorFresnelToUnique() {
-  ['global\\excel\\uniqueitems.txt', 'global\\excel\\base\\uniqueitems.txt'].forEach((fileName) => {
-    const data = readTsvSafe(fileName);
-    if (!data) return;
-    const row = data.rows.find((r) => r.index === "Thor's Hammer");
-    if (!row) {
-      console.warn('UniqueItemVisuals: "Thor\'s Hammer" not found in ' + fileName + ', skipping.');
-      return;
-    }
-    row.prop12 = 'oskill_hide';
-    row.par12 = THOR_FRESNEL_SKILL;
-    row.min12 = '1';
-    row.max12 = '1';
-    writeTsvSafe(fileName, data);
-  });
-  console.log('UniqueItemVisuals: attached Thor fresnel to Thor\'s Hammer (prop12)');
-}
-
 // Adds the skilldesc row so the skill has a clean display name if the oskill
 // line renders. All-zero placement keeps it out of every skill tree.
 function writeWingTestSkillDesc(fileNames) {
@@ -1940,7 +1583,7 @@ function writeWingTestStrings(fileNames) {
   fileNames.forEach((fileName) => {
     let data;
     try {
-      data = D2RMM.readJson(fileName);
+      data = readJsonSafe(fileName);
     } catch (error) {
       console.warn(
         'UniqueItemVisuals: could not read ' +
@@ -1979,7 +1622,7 @@ function writeWingTestStrings(fileNames) {
       nextId += 1;
     });
     try {
-      D2RMM.writeJson(fileName, data);
+      writeJsonSafe(fileName, data);
       console.log('UniqueItemVisuals: added oskill test skill strings to ' + fileName);
     } catch (error) {
       console.warn(
@@ -2266,3 +1909,6 @@ writeTemplarMightRecipe();
 writeEnigmaBaseRecipe();
 writeUniqueArmorTestRecipes();
 injectPlayerWingFallback();
+
+// Write every touched file once (the I/O cache deferred all writes above).
+flushIo();

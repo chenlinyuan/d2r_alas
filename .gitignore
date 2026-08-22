@@ -7,6 +7,9 @@ Reimagined.mpq.lnk
 Thumbs.db
 Desktop.ini
 
+# D2RMM install output (mods merge target)
+data/
+
 # Backup / temp files
 *.bak*
 *.orig

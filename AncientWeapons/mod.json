@@ -3,5 +3,14 @@
   "name": "先祖武器 (Ancient Weapons)",
   "description": "先祖主题暗金武器合集：①「马道克之怒」精英投掷斧，复用 Uber 马道克模型+闪电附魔；②「科力克之力」精英双手战斧，复用 Uber 科力克模型+冷附魔特效，属性贴合超级科力克（寒冷附魔/暴风雪/冷穿透/压碎打击）。测试配方：任意武器+回城卷轴(tsc)→马道克之怒；任意武器+鉴定卷轴(isc)→科力克之力。",
   "author": "Codex",
-  "version": "4.1"
+  "version": "4.2",
+  "config": [
+    {
+      "id": "chargedBolts",
+      "type": "checkbox",
+      "name": "飞斧命中生成充能弹",
+      "description": "命中时生成充能弹（同原版马道克投掷斧）。原版充能弹数量固定、不随等级增加；Reimagined 崩溃是因为它改了充能弹投射物按等级增加数量。若出现崩溃可关闭此开关。",
+      "defaultValue": true
+    }
+  ]
 }
