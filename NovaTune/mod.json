@@ -1,0 +1,28 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "NovaTune 新星精力范围",
+  "description": "让法师新星（Nova）的攻击范围随精力加成（每 X 点精力 +1 范围，默认 50），并在技能说明里新增“范围”一行。",
+  "author": "Codex",
+  "website": "",
+  "version": "1.0",
+  "config": [
+    {
+      "id": "energyPerRange",
+      "type": "number",
+      "name": "每多少精力+1范围",
+      "description": "每 X 点精力，新星范围 +1（默认 50）。",
+      "defaultValue": 50,
+      "minValue": 1,
+      "maxValue": 1000
+    },
+    {
+      "id": "rangeCap",
+      "type": "number",
+      "name": "导弹最大范围",
+      "description": "新星圆环的最大扩散距离（默认 26）。设得太大会让圆环到达最大后停留一会儿才消失，太小会提前截断圆环。",
+      "defaultValue": 26,
+      "minValue": 13,
+      "maxValue": 200
+    }
+  ]
+}

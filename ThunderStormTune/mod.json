@@ -1,0 +1,9 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "ThunderStormTune 雷云风暴优化",
+  "description": "优化雷云风暴（Thunder Storm）：把 Param3 改为 0，保留 Param5=0/Param6=100 的等级缩放；技能说明新增“攻击间隔（帧）”一行，用真实 dm56 公式计算，含新增翻译 key。",
+  "author": "Codex",
+  "website": "",
+  "version": "1.0",
+  "config": []
+}

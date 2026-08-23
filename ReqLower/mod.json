@@ -1,0 +1,19 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "ReqLower 装备需求等级降低",
+  "description": "通过 合成公式按骷髅品级降低装备需求等级：碎片骷髅 -1、有瑕 -2、普通 -3、无瑕 -4、完美 -5（可乘步长）。按历史仓库把 item_levelreq 设为 32 位可保存/发送 stat。注意：会改变物品存档格式，旧存档可能无法读取（仅用于新建存档）。",
+  "author": "Codex",
+  "website": "",
+  "version": "1.0",
+  "config": [
+    {
+      "id": "reductionStep",
+      "type": "number",
+      "name": "降低步长",
+      "description": "各骷髅对应的降低等级 = 品级 × 步长。碎片=1×步长，完美=5×步长。默认 1。",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 20
+    }
+  ]
+}

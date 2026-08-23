@@ -1,0 +1,37 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "GemVendor 宝石商店",
+  "description": "让阿卡拉（Act 1）出售所有宝石（紫晶/黄晶/蓝晶/绿晶/红晶/钻石/骷髅，含碎片/有瑕/无瑕/完美）。",
+  "author": "Codex",
+  "website": "",
+  "version": "1.0",
+  "config": [
+    {
+      "id": "stockMin",
+      "type": "number",
+      "name": "每种宝石最少库存",
+      "description": "每种宝石在阿卡拉货架上的最少数量。",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 20
+    },
+    {
+      "id": "stockMax",
+      "type": "number",
+      "name": "每种宝石最多库存",
+      "description": "每种宝石在阿卡拉货架上的最多数量。",
+      "defaultValue": 3,
+      "minValue": 1,
+      "maxValue": 50
+    },
+    {
+      "id": "cost",
+      "type": "number",
+      "name": "出售价格",
+      "description": "设为 0 表示保留每种宝石原价；大于 0 则统一改成该金币价。",
+      "defaultValue": 0,
+      "minValue": 0,
+      "maxValue": 100000000
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "../config-schema.json",
+  "name": "SocketCraft 打孔合成",
+  "description": "通过 物品 + 1~8号符文 给物品打孔。原版武器/护甲保持原版上限；手套/鞋子 3 孔、腰带 2 孔、戒指/护身符 1 孔、原版不可打孔的投掷武器 3 孔。手套、鞋子、戒指、项链、腰带也支持打孔。",
+  "author": "Codex",
+  "website": "",
+  "version": "1.0",
+  "config": [
+    {
+      "id": "maxSockets",
+      "type": "number",
+      "name": "全局孔数上限",
+      "description": "所有配方孔数的全局上限（各部位另有固定上限）。调低可整体限制，例如设为 5 则武器/护甲最高 5 孔。默认 8。",
+      "defaultValue": 8,
+      "minValue": 1,
+      "maxValue": 8
+    },
+    {
+      "id": "enableNewTypes",
+      "type": "boolean",
+      "name": "启用手套/鞋子/戒指/项链/腰带打孔",
+      "description": "开启后这些原本不能打孔的部位也能打孔。关闭则仅武器/护甲可打孔。",
+      "defaultValue": true
+    }
+  ]
+}
