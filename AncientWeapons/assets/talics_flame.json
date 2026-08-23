@@ -2,12 +2,15 @@
   "dependencies": {
     "particles": [
       {
-        "path": "data/hd/vfx/particles/missiles/fire_arrow/fx_fire_projectile_arrow.particles"
+        "path": "data/hd/vfx/particles/character/enemy/ancientbarb1/vfx_ancientbarb1_flamesword.particles"
       }
     ],
     "models": [
       {
         "path": "data/hd/items/weapon/sword/_monsters/talic_sword/talic_sword.model"
+      },
+      {
+        "path": "data/hd/vfx/meshes/fx_mesh_fireballVertPaint.model"
       }
     ],
     "skeletons": [
@@ -264,40 +267,11 @@
           "floorModel": false,
           "terrainBlendEnableYUpBlend": false,
           "terrainBlendMode": 1
-        }
-      ]
-    },
-    {
-      "type": "Entity",
-      "name": "entity_root",
-      "id": 4294961035,
-      "components": [
-        {
-          "type": "VfxDefinitionComponent",
-          "name": "entity_fire_VfxDefinition",
-          "filename": "data/hd/vfx/particles/missiles/fire_arrow/fx_fire_projectile_arrow.particles",
-          "hardKillOnDestroy": false
         },
         {
-          "type": "TransformDefinitionComponent",
-          "name": "entity_fire_TransformDefinition",
-          "position": {
-            "x": 0.0,
-            "y": 0.55,
-            "z": 0.0
-          },
-          "orientation": {
-            "x": 0.69,
-            "y": 0.0,
-            "z": 0.0,
-            "w": 1.0
-          },
-          "scale": {
-            "x": 0.005,
-            "y": 0.002,
-            "z": 0.002
-          },
-          "inheritOnlyPosition": false
+          "type": "ObjectEffectDefinitionComponent",
+          "name": "entity_model_ObjectEffectDefinition",
+          "filename": "data/hd/vfx/particles/character/enemy/ancientbarb1/vfx_ancientbarb1_flamesword.particles"
         }
       ]
     }

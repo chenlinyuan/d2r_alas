@@ -875,7 +875,7 @@ function addTalicBase() {
     row.levelreq = '42';
     row.wclass = '1hs';
     row['2handedwclass'] = '1hs';
-    row.invwidth = '1';
+    row.invwidth = '2';
     row.invheight = '3';
     if (data.headers.indexOf('missiletype') !== -1) row.missiletype = '0';
     if (data.headers.indexOf('*comment') !== -1) {
@@ -972,8 +972,10 @@ function addTalicStrings() {
   console.log('AncientWeapons: added Talic item names to ' + fileName);
 }
 
-// Maps the base code to the vanilla War Sword asset so the inventory icon is
-// the Ancient Sword icon (there is no talic_sword inventory sprite to reuse).
+// Maps the base code to the custom Talic asset folder. The inventory icon comes
+// from hd/global/ui/items/weapon/sword/talics_flame.sprite (a red, centered
+// Conquest Sword look we ship); the 3D held model is the talic_sword monster
+// sword remapped in uniques.json.
 function addTalicHdMapping() {
   const fileName = 'hd\\items\\items.json';
   let items = readJsonSafe(fileName);
@@ -983,12 +985,12 @@ function addTalicHdMapping() {
   }
   const existing = items.find((entry) => entry && entry[TALIC_BASE_CODE]);
   if (existing) {
-    existing[TALIC_BASE_CODE] = { asset: 'sword/war_sword' };
+    existing[TALIC_BASE_CODE] = { asset: 'sword/talics_flame' };
   } else {
-    items.push({ [TALIC_BASE_CODE]: { asset: 'sword/war_sword' } });
+    items.push({ [TALIC_BASE_CODE]: { asset: 'sword/talics_flame' } });
   }
   writeJsonSafe(fileName, items);
-  console.log('AncientWeapons: mapped ' + TALIC_BASE_CODE + ' to sword/war_sword for the icon');
+  console.log('AncientWeapons: mapped ' + TALIC_BASE_CODE + ' to sword/talics_flame for the icon');
 }
 
 // The unique gets the custom flame sword held model (war_sword model + Talic
@@ -1012,12 +1014,13 @@ function addTalicUniqueHdMapping() {
   console.log('AncientWeapons: mapped unique ' + TALIC_UNIQUE_NAME + ' to ' + TALIC_ITEM_ASSET);
 }
 
-// Copies the custom Talic held-weapon asset (talic_sword model + persistent
-// fire_arrow Vfx that hugs the blade) into the output.
+// Copies the custom Talic held-weapon asset (talic_sword model + the original
+// flame) and the red, centered Talic inventory icon into the output.
 function copyTalicAssets() {
   try {
     D2RMM.copyFile('assets\\talics_flame.json', TALIC_ITEM_JSON, true);
-    console.log('AncientWeapons: copied Talic held-weapon asset to ' + TALIC_ITEM_JSON);
+    D2RMM.copyFile('assets\\talics_flame.sprite', TALIC_ICON_DST, true);
+    console.log('AncientWeapons: copied Talic held-weapon asset and red icon');
   } catch (error) {
     console.warn('AncientWeapons: could not copy Talic held-weapon asset (' + error.message + ').');
   }
